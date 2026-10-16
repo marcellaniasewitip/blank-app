@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose draws the UI; this only themes the window before the first frame. -->
+    <style name="Theme.CooperWaters" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#FF07426E</item>
+        <item name="android:windowBackground">#FFFFFFFF</item>
+    </style>
+</resources>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  All user-facing text of the Customer App. Tok Pisin will be added in Phase 2 as values-tpi/strings.xml.
+  Shared strings (statuses, network errors, payment method names) live in shared/android-core (cw_*).
+-->
+<resources>
+    <string name="app_name">Cooper Waters</string>
+
+    <!-- Generic actions -->
+    <string name="action_back">Back</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_continue">Continue</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_load_more">Load more</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_save">Save</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_orders_id" translatable="false">orders</string>
+    <string name="notification_channel_orders">Order updates</string>
+
+    <!-- Sign in -->
+    <string name="login_tagline">Clean water delivered to your door in Port Moresby.</string>
+    <string name="login_phone_label">Mobile number</string>
+    <string name="login_phone_hint">e.g. 7123 4567</string>
+    <string name="login_send_code">Send code</string>
+    <string name="login_code_sent">We sent a 6-digit code by SMS to %1$s.</string>
+    <string name="login_code_label">6-digit code</string>
+    <string name="login_verify">Sign in</string>
+    <string name="login_resend">Send a new code</string>
+    <string name="login_resend_in">Send a new code in %1$d s</string>
+    <string name="login_change_number">Use a different number</string>
+
+    <!-- Debug-only server override -->
+    <string name="debug_server_title">Developer: API server</string>
+    <string name="debug_server_label">Base URL (without /api/v1)</string>
+    <string name="debug_server_save">Save server</string>
+    <string name="debug_server_restart">Saved. Close and reopen the app to use it.</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_welcome_title">Welcome</string>
+    <string name="profile_welcome_body">What should drivers call you?</string>
+    <string name="profile_name_label">Your name</string>
+    <string name="profile_name_required">Enter your name.</string>
+    <string name="profile_phone">Mobile number: %1$s</string>
+    <string name="profile_sign_out">Sign out</string>
+
+    <!-- Home -->
+    <string name="home_order_water">Order water</string>
+    <string name="home_active_orders">Current orders</string>
+    <string name="home_recent_orders">Recent orders</string>
+    <string name="home_no_active">No current orders.</string>
+    <string name="home_cached">Showing saved information. Tap refresh when you are online.</string>
+    <string name="home_unsent_order">An order is saved on this phone and will be sent as soon as you are online. You will not be charged twice.</string>
+    <string name="order_summary_line">%1$d × %2$s · %3$s</string>
+
+    <!-- Saved locations -->
+    <string name="locations_title">Delivery locations</string>
+    <string name="locations_add">Add a location</string>
+    <string name="locations_empty">No saved locations yet.</string>
+    <string name="locations_landmark">Landmark: %1$s</string>
+    <string name="locations_delete_title">Delete location?</string>
+    <string name="locations_delete_body">Delete \"%1$s\" from your saved locations?</string>
+    <string name="location_new_title">New location</string>
+    <string name="location_edit_title">Edit location</string>
+    <string name="location_pin">Delivery pin</string>
+    <string name="location_drag_hint">Move the map so the pin is exactly where the truck should stop.</string>
+    <string name="location_use_mine">Use my current location</string>
+    <string name="location_locating">Finding your location…</string>
+    <string name="location_unavailable">Could not get your location. Move the map to place the pin.</string>
+    <string name="location_label">Name</string>
+    <string name="location_label_hint">e.g. Home, Shop</string>
+    <string name="location_label_required">Give this location a name.</string>
+    <string name="location_address">Address</string>
+    <string name="location_address_hint">e.g. Section 11, Lot 1, Boroko</string>
+    <string name="location_address_required">Enter the address.</string>
+    <string name="location_notes">Landmark directions</string>
+    <string name="location_notes_hint">e.g. Blue gate opposite the trade store</string>
+    <string name="location_notes_help">Landmarks help the driver find you. Please be detailed.</string>
+
+    <!-- New order -->
+    <string name="order_step_package">Choose water</string>
+    <string name="order_step_location">Delivery location</string>
+    <string name="order_step_payment">Payment</string>
+    <string name="order_step_review">Confirm order</string>
+    <string name="order_choose_package">Choose a package</string>
+    <string name="order_quantity">Quantity</string>
+    <string name="order_qty_minus">−</string>
+    <string name="order_qty_plus">+</string>
+    <string name="order_max_quantity">Up to %1$d per order.</string>
+    <string name="order_fixed_price">Fixed price</string>
+    <string name="order_price_estimate">Price (offline estimate)</string>
+    <string name="order_choose_location">Choose where to deliver</string>
+    <string name="order_no_locations">You have no saved locations. Add one to continue.</string>
+    <string name="order_payment_method">Payment method</string>
+    <string name="order_cod_help">Pay the driver in cash when the water arrives.</string>
+    <string name="order_cellmoney_help">Pay now from your mobile money account.</string>
+    <string name="order_msisdn_label">Cell money number</string>
+    <string name="order_msisdn_invalid">Enter the cell money number to charge.</string>
+    <string name="order_review_title">Check your order</string>
+    <string name="order_review_package">Package</string>
+    <string name="order_review_unit_price">Price each</string>
+    <string name="order_review_deliver_to">Deliver to</string>
+    <string name="order_review_note">You can cancel for free until a driver accepts your order.</string>
+    <string name="order_place">Place order</string>
+    <string name="order_retry_send">Send order again</string>
+    <string name="order_discard_unsent">Discard this order</string>
+    <string name="order_incomplete">Choose a package and a delivery location first.</string>
+    <string name="order_unsent_resume">Your last order was not confirmed yet. Tap \"Send order again\" — it will not be placed twice.</string>
+    <string name="order_still_sending">The server is busy. Your order is saved; tap \"Send order again\" in a moment. It will not be placed twice.</string>
+    <string name="order_still_sending_offline">No connection. Your order is saved on this phone and will be sent automatically when you are back online.</string>
+
+    <!-- Cell money payment -->
+    <string name="payment_title">Cell money payment</string>
+    <string name="payment_waiting">Waiting for your payment…</string>
+    <string name="payment_expires_in">Time left: %1$s</string>
+    <string name="payment_amount">Amount</string>
+    <string name="payment_fee">Fee</string>
+    <string name="payment_reference">Reference</string>
+    <string name="payment_status">Status</string>
+    <string name="payment_retry_help">The payment did not go through. Check the number and try again.</string>
+    <string name="payment_retry">Try payment again</string>
+    <string name="payment_cancel_order">Cancel order</string>
+    <string name="payment_cancel_reason">Customer cancelled while paying</string>
+    <string name="payment_failed_title">This order was not paid and has been closed.</string>
+    <string name="payment_view_order">View order</string>
+
+    <!-- Tracking -->
+    <string name="tracking_title">Your order</string>
+    <string name="tracking_cached">Offline — showing the last known status.</string>
+    <string name="tracking_truck">Truck %1$s</string>
+    <string name="tracking_rating">Rating %1$.1f ★</string>
+    <string name="tracking_call_driver">Call driver</string>
+    <string name="tracking_driver_seen">Driver location updated %1$s</string>
+    <string name="tracking_pay">Pay with cell money</string>
+    <string name="tracking_confirm_help">Has the water been delivered? Confirm to complete the order.</string>
+    <string name="tracking_confirm">Confirm I received the water</string>
+    <string name="tracking_confirmed">Thank you! Your order is complete.</string>
+    <string name="tracking_rate">Rate your driver</string>
+    <string name="tracking_cancel">Cancel order</string>
+    <string name="tracking_cancel_closed">This order can no longer be cancelled in the app. Contact Cooper Waters support if you need help.</string>
+    <string name="tracking_report_problem">Report a problem</string>
+    <string name="tracking_timeline">Progress</string>
+    <string name="tracking_details">Order details</string>
+    <string name="tracking_total">Total</string>
+    <string name="tracking_placed_at">Ordered</string>
+    <string name="tracking_cancel_reason">Reason</string>
+    <string name="tracking_cancel_title">Cancel this order?</string>
+    <string name="tracking_cancel_body">Tell us why you are cancelling (optional).</string>
+    <string name="tracking_cancel_default_reason">Cancelled by customer</string>
+    <string name="tracking_cancel_confirm">Cancel order</string>
+    <string name="tracking_cancel_keep">Keep order</string>
+
+    <!-- Rating & disputes -->
+    <string name="rate_title">Rate your driver</string>
+    <string name="rate_question">How was your delivery?</string>
+    <string name="rate_star_desc">%1$d stars</string>
+    <string name="rate_comment">Comment (optional)</string>
+    <string name="rate_choose_stars">Tap the stars to rate.</string>
+    <string name="rate_submit">Send rating</string>
+    <string name="dispute_title">Report a problem</string>
+    <string name="dispute_intro">What went wrong? Our team will look into it and contact you.</string>
+    <string name="dispute_choose_category">Choose what went wrong.</string>
+    <string name="dispute_describe">Please describe the problem.</string>
+    <string name="dispute_description">Describe the problem</string>
+    <string name="dispute_submit">Send report</string>
+
+    <!-- History -->
+    <string name="history_title">Order history</string>
+    <string name="history_empty">You have not ordered yet.</string>
+</resources>

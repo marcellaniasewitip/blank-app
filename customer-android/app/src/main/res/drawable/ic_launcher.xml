@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder launcher icon (water drop). Replace with final brand assets. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <path android:fillColor="#FF0B6FB8" android:pathData="M0,0h48v48h-48z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M24,8c-7,8.5 -11,14.7 -11,19.6 0,6.5 4.9,11.4 11,11.4s11,-4.9 11,-11.4c0,-4.9 -4,-11.1 -11,-19.6z" />
+</vector>

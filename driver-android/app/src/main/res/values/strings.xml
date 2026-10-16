@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  All user-facing text of the Driver App. Tok Pisin will be added in Phase 2 as values-tpi/strings.xml.
+  Shared strings (statuses, network errors, payment method names) live in shared/android-core (cw_*).
+-->
+<resources>
+    <string name="app_name">Cooper Waters Driver</string>
+    <string name="currency_prefix">K</string>
+
+    <string name="action_back">Back</string>
+    <string name="action_done">Done</string>
+    <string name="action_load_more">Load more</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_save">Save</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_offers_id" translatable="false">offers</string>
+    <string name="notification_channel_offers">New job offers</string>
+    <string name="notification_channel_jobs_id" translatable="false">jobs</string>
+    <string name="notification_channel_jobs">Job and wallet updates</string>
+    <string name="notification_channel_tracking_id" translatable="false">tracking</string>
+    <string name="notification_channel_tracking">Location sharing while online</string>
+    <string name="notification_offer_title">New job offer</string>
+    <string name="notification_offer_body">%1$s — earn %2$s. Open the app to accept.</string>
+    <string name="tracking_notification_title">You are online</string>
+    <string name="tracking_notification_body">Sharing your location with Cooper Waters to receive jobs.</string>
+
+    <!-- Sign in -->
+    <string name="login_tagline">Sign in to receive water delivery jobs.</string>
+    <string name="login_phone_label">Mobile number</string>
+    <string name="login_phone_hint">e.g. 7123 4567</string>
+    <string name="login_send_code">Send code</string>
+    <string name="login_code_sent">We sent a 6-digit code by SMS to %1$s.</string>
+    <string name="login_code_label">6-digit code</string>
+    <string name="login_verify">Sign in</string>
+    <string name="login_resend">Send a new code</string>
+    <string name="login_resend_in">Send a new code in %1$d s</string>
+    <string name="login_change_number">Use a different number</string>
+    <string name="debug_server_title">Developer: API server</string>
+    <string name="debug_server_label">Base URL (without /api/v1)</string>
+    <string name="debug_server_save">Save server</string>
+    <string name="debug_server_restart">Saved. Close and reopen the app to use it.</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_welcome_body">Welcome! Enter your name as it appears on your licence.</string>
+    <string name="profile_name_label">Your name</string>
+    <string name="profile_name_required">Enter your name.</string>
+    <string name="profile_phone">Mobile number: %1$s</string>
+    <string name="profile_rating">Rating %1$.1f ★ (%2$d ratings)</string>
+    <string name="profile_sign_out">Sign out</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Set up your account</string>
+    <string name="onboarding_intro">Upload clear photos of each document and register your truck. Our team will review them.</string>
+    <string name="onboarding_rejected">Your application needs changes: %1$s</string>
+    <string name="onboarding_documents">Documents</string>
+    <string name="onboarding_uploading">Uploading…</string>
+    <string name="photo_take">Take photo</string>
+    <string name="photo_gallery">Choose from gallery</string>
+    <string name="doc_drivers_licence">Driver\'s licence</string>
+    <string name="doc_vehicle_registration">Vehicle registration</string>
+    <string name="doc_national_id">National ID</string>
+    <string name="doc_truck_photo">Photo of your truck</string>
+    <string name="doc_other">Document</string>
+    <string name="doc_status_missing">Needed</string>
+    <string name="doc_status_pending">In review</string>
+    <string name="doc_status_approved">Approved</string>
+    <string name="doc_status_rejected">Rejected — upload again</string>
+    <string name="truck_title">Your truck</string>
+    <string name="truck_plate">Number plate</string>
+    <string name="truck_capacity">Tank capacity (litres)</string>
+    <string name="truck_photo_optional">Truck photo (optional)</string>
+    <string name="truck_photo_ready">Truck photo ready to upload</string>
+    <string name="truck_save">Save truck</string>
+    <string name="truck_saved">Truck saved</string>
+    <string name="truck_plate_required">Enter the number plate.</string>
+    <string name="truck_capacity_invalid">Enter the tank capacity in litres (100 to 100,000).</string>
+
+    <!-- Waiting for approval -->
+    <string name="waiting_title">Application</string>
+    <string name="waiting_review_title">We are reviewing your documents</string>
+    <string name="waiting_review_body">This usually takes one working day. We will send you an SMS when you are approved.</string>
+    <string name="waiting_suspended_title">Your account is suspended</string>
+    <string name="waiting_suspended_body">Please contact Cooper Waters support.</string>
+    <string name="waiting_truck">Truck %1$s · %2$,d L</string>
+    <string name="waiting_check_now">Check again</string>
+
+    <!-- Home -->
+    <string name="home_online">Online</string>
+    <string name="home_offline">Offline</string>
+    <string name="home_online_help">You will receive job offers near you.</string>
+    <string name="home_offline_help">Go to a depot and switch on to receive jobs.</string>
+    <string name="home_now_online">You are online. Waiting for jobs.</string>
+    <string name="home_location_needed">Location is needed to go online. Turn on location and try again.</string>
+    <string name="home_not_at_depot">You need to be at a depot to go online. Nearest: %1$s (%2$s away).</string>
+    <string name="home_current_job">Current job %1$s</string>
+    <string name="home_open_job">Open job</string>
+    <string name="home_offers">Job offers</string>
+    <string name="home_waiting_for_offers">No offers right now. Keep the app open — new jobs appear here.</string>
+    <string name="home_offer_taken">Sorry, this job has already been taken by another driver.</string>
+    <string name="home_offer_expired">This offer has expired.</string>
+    <string name="home_accept_pending">No answer yet. Tap Accept again — it is safe, you cannot take the job twice.</string>
+    <string name="home_depots">Depots</string>
+    <string name="home_depots_help">Going online and loading water are only possible inside a depot.</string>
+
+    <!-- Offers -->
+    <string name="offer_expires_in">%1$s left</string>
+    <string name="offer_expired">Expired</string>
+    <string name="offer_earn">You earn %1$s</string>
+    <string name="offer_load">%1$d × %2$s (%3$,d L)</string>
+    <string name="offer_distance">%1$s away</string>
+    <string name="offer_accept">Accept</string>
+    <string name="offer_accepting">Accepting…</string>
+    <string name="offer_decline">Decline</string>
+
+    <!-- Job -->
+    <string name="job_title">Job</string>
+    <string name="job_cached">Offline — showing the last known job details.</string>
+    <string name="job_deliver_to">Deliver to</string>
+    <string name="job_landmark">Landmark: %1$s</string>
+    <string name="job_call_customer">Call customer</string>
+    <string name="job_go_to_depot">Go to a depot to load the water.</string>
+    <string name="job_navigate_depot">Navigate to %1$s</string>
+    <string name="job_arrive_depot">I am at the depot — start loading</string>
+    <string name="job_loading_help">Confirm when the tank is full. You must still be at the depot.</string>
+    <string name="job_confirm_loaded">Water loaded — start delivery</string>
+    <string name="job_navigate_customer">Navigate to customer</string>
+    <string name="job_mark_arrived">I have arrived</string>
+    <string name="job_proof_help">Optional: take a photo of the delivery as proof.</string>
+    <string name="job_proof_photo">Proof of delivery photo</string>
+    <string name="job_proof_remove">Remove photo</string>
+    <string name="job_mark_delivered">Mark as delivered</string>
+    <string name="job_await_customer">Delivered. Waiting for the customer to confirm — it completes automatically if they do not.</string>
+    <string name="job_back_home">Back to home</string>
+    <string name="job_location_needed">We need your location to check you are at the depot. Turn on location and try again.</string>
+    <string name="job_not_at_depot">You are not inside a depot. Nearest: %1$s (%2$s away).</string>
+    <string name="job_load">Load</string>
+    <string name="job_load_value">%1$d × %2$s</string>
+    <string name="job_price">Order price</string>
+    <string name="job_earnings">Your earnings</string>
+    <string name="job_commission">Platform commission</string>
+    <string name="job_payment">Payment</string>
+    <string name="job_collect_cash">Collect %1$s cash from the customer.</string>
+    <string name="job_report_issue">Report an issue</string>
+
+    <!-- Issue -->
+    <string name="issue_title">Report an issue</string>
+    <string name="issue_intro">Tell us what went wrong with this job.</string>
+    <string name="issue_choose_category">Choose what went wrong.</string>
+    <string name="issue_describe">Please describe the issue.</string>
+    <string name="issue_description">Describe the issue</string>
+    <string name="issue_submit">Send report</string>
+    <string name="issue_sent">Report sent. Our team will contact you.</string>
+
+    <!-- Wallet -->
+    <string name="wallet_title">Wallet</string>
+    <string name="wallet_balance">Balance</string>
+    <string name="wallet_minimum">Minimum to take jobs</string>
+    <string name="wallet_withdrawable">Available to withdraw</string>
+    <string name="wallet_pending_topups">Top-ups in review (%1$d)</string>
+    <string name="wallet_blocked_title">Top up to keep working</string>
+    <string name="wallet_blocked_body">Your balance is %1$s. You need at least %2$s to go online and accept jobs. Top up %3$s or more.</string>
+    <string name="wallet_cached">Offline — showing the last saved figures.</string>
+    <string name="wallet_topup">Top up</string>
+    <string name="wallet_withdraw">Withdraw</string>
+    <string name="wallet_history">History</string>
+    <string name="wallet_no_entries">No wallet activity yet.</string>
+    <string name="wallet_balance_after">Balance %1$s</string>
+    <string name="ledger_topup">Top-up</string>
+    <string name="ledger_commission">Commission</string>
+    <string name="ledger_order_earning">Job earnings</string>
+    <string name="ledger_refund">Refund</string>
+    <string name="ledger_adjustment">Adjustment</string>
+    <string name="ledger_payout">Withdrawal</string>
+    <string name="ledger_other">Other</string>
+
+    <!-- Top-up -->
+    <string name="topup_title">Top up wallet</string>
+    <string name="topup_min_info">The minimum balance to take jobs is %1$s.</string>
+    <string name="topup_method">How did you pay?</string>
+    <string name="topup_bank">Bank transfer</string>
+    <string name="topup_cellmoney">Cell money</string>
+    <string name="topup_amount">Amount</string>
+    <string name="topup_amount_invalid">Enter a valid amount, e.g. 50 or 50.00.</string>
+    <string name="topup_amount_min">The minimum is %1$s.</string>
+    <string name="topup_bank_help">Transfer to the Cooper Waters account first, then enter the bank\'s transaction reference.</string>
+    <string name="topup_reference">Bank transaction reference</string>
+    <string name="topup_reference_required">Enter the bank transfer reference.</string>
+    <string name="topup_proof_optional">Photo of the receipt (optional)</string>
+    <string name="topup_proof_ready">Receipt photo ready to upload</string>
+    <string name="topup_merchant">Cooper Waters merchant number: %1$s</string>
+    <string name="topup_msisdn">Cell money number to charge</string>
+    <string name="topup_msisdn_invalid">Enter your cell money number.</string>
+    <string name="topup_submit">Submit top-up</string>
+    <string name="topup_retry">Send again</string>
+    <string name="topup_discard">Discard this request</string>
+    <string name="topup_unsent_resume">Your last request was not confirmed yet. Tap \"Send again\" — it will not be submitted twice.</string>
+    <string name="topup_submitted">Top-up of %1$s submitted.</string>
+    <string name="topup_status_pending">It will be added to your wallet once confirmed.</string>
+    <string name="topup_status_approved">It has been added to your wallet.</string>
+    <string name="topup_reference_label">Reference</string>
+
+    <!-- Withdrawal -->
+    <string name="withdraw_title">Withdraw</string>
+    <string name="withdraw_help">You can withdraw your balance above the %1$s minimum. The smallest withdrawal is %2$s. Finance pays out manually.</string>
+    <string name="withdraw_amount">Amount</string>
+    <string name="withdraw_all">Withdraw everything available</string>
+    <string name="withdraw_bank">Bank account</string>
+    <string name="withdraw_destination_msisdn">Cell money number</string>
+    <string name="withdraw_destination_bank">Bank, account name and number</string>
+    <string name="withdraw_destination_required">Enter where to send the money.</string>
+    <string name="withdraw_min">The minimum withdrawal is %1$s.</string>
+    <string name="withdraw_max">You can withdraw up to %1$s.</string>
+    <string name="withdraw_submit">Request withdrawal</string>
+    <string name="withdraw_done">Withdrawal requested. You will be notified when it is paid.</string>
+    <string name="withdraw_unsent_resume">Your last withdrawal request was not confirmed yet. Tap \"Send again\" — it will not be submitted twice.</string>
+
+    <!-- Earnings & history -->
+    <string name="earnings_title">Earnings</string>
+    <string name="earnings_today">Today</string>
+    <string name="earnings_week">7 days</string>
+    <string name="earnings_month">30 days</string>
+    <string name="earnings_net">Net earnings</string>
+    <string name="earnings_jobs">Completed jobs</string>
+    <string name="earnings_gross">Order value</string>
+    <string name="earnings_commission">Commission</string>
+    <string name="earnings_cash">Cash collected</string>
+    <string name="earnings_cellmoney">Cell money earnings credited</string>
+    <string name="earnings_topups">Top-ups</string>
+    <string name="earnings_payouts">Withdrawals</string>
+    <string name="earnings_since">Since %1$s</string>
+    <string name="history_title">Job history</string>
+    <string name="history_empty">No jobs yet.</string>
+</resources>

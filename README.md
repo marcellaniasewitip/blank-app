@@ -46,3 +46,12 @@ infrastructure; the `Deploy to AWS` GitHub Actions workflow builds, migrates and
 - `Idempotency-Key` required on create order, initiate payment, top-up, withdrawal and accept.
 - All `[CONFIRM]` business decisions are admin-editable settings or provider adapters —
   see **[docs/open-decisions.md](docs/open-decisions.md)**.
+
+## Build status
+
+| Part | Verified |
+| --- | --- |
+| Backend | lint, typecheck, 133 unit + integration tests, end-to-end simulator (real BullMQ + WebSockets), Docker image run (migrate/seed/API/worker), k6 load test |
+| Admin | typecheck, lint, 86 unit tests, production build, Docker image, Playwright check of every screen |
+| Infra | `terraform validate`, `docker compose config` |
+| Android | Non-UI core and ViewModels compiled and tested on the JVM (35 + 15 tests, plus a live smoke test against the API). **The full Android build (`./gradlew :app:assembleDebug test`) has not run yet** — the development sandbox couldn't reach Google Maven. The `android` CI job runs it on GitHub; expect a round of Compose compile fixes on first build. |

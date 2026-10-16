@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared strings used by both apps. Tok Pisin translations go in values-tpi/strings.xml (Phase 2). -->
+<resources>
+    <string name="cw_offline">You are offline. Showing the last saved information.</string>
+    <string name="cw_offline_with_pending">You are offline. %1$d request(s) will be sent when you are back online.</string>
+    <string name="cw_sending_pending">Sending %1$d saved request(s)…</string>
+    <string name="cw_retry">Retry</string>
+    <string name="cw_dismiss">Dismiss</string>
+    <string name="cw_error_network">No connection. Check your mobile data and try again.</string>
+    <string name="cw_error_generic">Something went wrong. Please try again.</string>
+    <string name="cw_error_unexpected">The server sent an unexpected reply. Please try again.</string>
+    <string name="cw_error_rate_limited">Too many attempts. Please wait a minute and try again.</string>
+    <string name="cw_still_sending">Still trying to send. We will keep retrying safely — you will not be charged twice.</string>
+    <string name="cw_status_PENDING_PAYMENT">Waiting for payment</string>
+    <string name="cw_status_SEARCHING">Finding a driver</string>
+    <string name="cw_status_ACCEPTED">Driver assigned</string>
+    <string name="cw_status_LOADING">Loading water at depot</string>
+    <string name="cw_status_EN_ROUTE">On the way</string>
+    <string name="cw_status_ARRIVED">Driver has arrived</string>
+    <string name="cw_status_DELIVERED">Delivered</string>
+    <string name="cw_status_COMPLETED">Completed</string>
+    <string name="cw_status_CANCELLED">Cancelled</string>
+    <string name="cw_status_EXPIRED">No driver found</string>
+    <string name="cw_status_FAILED">Payment failed</string>
+    <string name="cw_status_DISPUTED">Issue under review</string>
+    <string name="cw_status_unknown">Unknown status</string>
+    <string name="cw_payment_cod">Cash on delivery</string>
+    <string name="cw_payment_cellmoney">Cell money</string>
+    <string name="cw_dispute_not_delivered">Water not delivered</string>
+    <string name="cw_dispute_short_volume">Less water than ordered</string>
+    <string name="cw_dispute_quality">Water quality problem</string>
+    <string name="cw_dispute_payment">Payment problem</string>
+    <string name="cw_dispute_behaviour">Behaviour</string>
+    <string name="cw_dispute_other">Other</string>
+    <string name="cw_litres">%1$,d L</string>
+    <string name="cw_map_destination">Delivery point</string>
+    <string name="cw_map_driver">Driver</string>
+    <string name="cw_map_me">You</string>
+    <string name="cw_login_phone_invalid">Enter your mobile number.</string>
+    <string name="cw_login_code_invalid">Enter the 6-digit code from the SMS.</string>
+    <string name="cw_login_code_wrong">That code is not correct.</string>
+</resources>
