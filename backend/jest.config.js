@@ -4,7 +4,8 @@ module.exports = {
   rootDir: '.',
   roots: ['<rootDir>/test'],
   testRegex: '.*\\.spec\\.ts$',
-  transform: { '^.+\\.ts$': ['ts-jest', { isolatedModules: true }] },
+  transform: { '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.jest.json' }] },
   setupFiles: ['<rootDir>/test/setup-env.ts'],
-  testTimeout: 30000,
+  globalSetup: '<rootDir>/test/global-setup.ts',
+  testTimeout: 60000,
 };

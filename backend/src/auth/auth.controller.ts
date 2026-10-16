@@ -10,7 +10,9 @@ import { AdminPrincipal } from './auth.types';
 
 @ApiTags('auth')
 @Controller('auth')
-@Throttle({ default: { limit: 10, ttl: 60_000 } })
+// Per-IP limits are generous: PNG mobile networks put many users behind carrier-grade NAT.
+// Per-phone OTP limits (DB-backed, see OtpService) are the real brake.
+@Throttle({ default: { limit: 30, ttl: 60_000 } })
 export class AuthController {
   constructor(
     private readonly users: UserAuthService,
@@ -22,7 +24,7 @@ export class AuthController {
   @Public()
   @Post('otp/request')
   @HttpCode(200)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   requestOtp(@Body() dto: RequestOtpDto, @Ip() ip: string) {
     return this.users.requestOtp(dto.phone, ip ?? null);
   }

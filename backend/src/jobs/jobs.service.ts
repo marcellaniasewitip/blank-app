@@ -16,6 +16,7 @@ export interface ScheduledJob {
   runAt: number;
   jobId?: string;
   attempts?: number;
+  attemptsMade?: number;
 }
 
 /**
@@ -74,7 +75,14 @@ export class JobsService implements OnModuleDestroy {
       const idx = this.scheduled.findIndex((j) => (!name || j.name === name) && (force || j.runAt <= Date.now()));
       if (idx < 0) return ran;
       const [job] = this.scheduled.splice(idx, 1);
-      await this.run(job.name, job.data);
+      try {
+        await this.run(job.name, job.data);
+      } catch (err) {
+        // Mirror BullMQ retries: re-queue until attempts are used up, then surface the error.
+        const made = (job.attemptsMade ?? 0) + 1;
+        if (made < (job.attempts ?? 5)) this.scheduled.push({ ...job, attemptsMade: made });
+        throw err;
+      }
       ran++;
     }
   }
@@ -89,7 +97,7 @@ export class JobsService implements OnModuleDestroy {
           if (!h) throw new Error(`No job handler registered for ${job.name}`);
           await h(job.data, job);
         },
-        { connection: this.redis(), concurrency: q === 'notifications' ? 10 : 5 },
+        { connection: this.redis(), prefix: this.prefix(), concurrency: q === 'notifications' ? 10 : 5 },
       );
       worker.on('failed', (job, err) =>
         logger.warn({ queue: q, job: job?.name, jobId: job?.id, attempts: job?.attemptsMade, err: err.message }, 'job failed'),
@@ -110,10 +118,14 @@ export class JobsService implements OnModuleDestroy {
   private queue(name: QueueName): Queue {
     let q = this.queues.get(name);
     if (!q) {
-      q = new Queue(name, { connection: this.redis() });
+      q = new Queue(name, { connection: this.redis(), prefix: this.prefix() });
       this.queues.set(name, q);
     }
     return q;
+  }
+
+  private prefix(): string {
+    return `${loadEnv().redisPrefix}:bull`;
   }
 
   private redis(): IORedis {

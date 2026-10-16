@@ -43,7 +43,8 @@ export const SETTING_DEFAULTS = {
   'otp.ttl_sec': 300,
   'otp.max_attempts': 5,
   'otp.max_sends_per_phone_per_hour': 5,
-  'otp.max_sends_per_ip_per_hour': 30,
+  /** High because of carrier-grade NAT on PNG mobile networks. */
+  'otp.max_sends_per_ip_per_hour': 200,
 
   'dispute.categories': ['not_delivered', 'short_volume', 'quality', 'payment', 'behaviour', 'other'],
 

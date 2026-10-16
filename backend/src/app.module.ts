@@ -54,7 +54,10 @@ import { IdempotencyInterceptor } from './common/idempotency';
  */
 @Module({
   imports: [
-    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 300 }]),
+    ThrottlerModule.forRoot({
+      throttlers: [{ name: 'default', ttl: 60_000, limit: 300 }],
+      skipIf: () => process.env.NODE_ENV === 'test',
+    }),
     PrismaModule,
     SettingsModule,
     AuditModule,

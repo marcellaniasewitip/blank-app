@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/http-exception.filter';
 import { loadEnv } from './config/env';
 import { logger } from './common/logger';
+import { RedisIoAdapter } from './realtime/redis-io.adapter';
 
 /** Shared app construction for the HTTP server, tests and OpenAPI generation. */
 export async function createApp(opts: { logger?: boolean } = {}): Promise<NestExpressApplication> {
@@ -17,6 +18,7 @@ export async function createApp(opts: { logger?: boolean } = {}): Promise<NestEx
     logger: opts.logger === false ? false : ['error', 'warn'],
   });
   configureApp(app);
+  if (process.env.JOBS_DRIVER !== 'memory') app.useWebSocketAdapter(new RedisIoAdapter(app));
   return app;
 }
 

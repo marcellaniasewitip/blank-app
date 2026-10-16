@@ -30,6 +30,8 @@ export interface Env {
   port: number;
   databaseUrl: string;
   redisUrl: string;
+  /** Namespaces BullMQ queues and Socket.IO channels so environments can share one Redis. */
+  redisPrefix: string;
   jwtAccessSecret: string;
   jwtRefreshSecret: string;
   jwtAccessTtlSec: number;
@@ -62,6 +64,7 @@ export function loadEnv(): Env {
     port: int('PORT', 3000),
     databaseUrl: str('DATABASE_URL'),
     redisUrl: str('REDIS_URL', devDefault('redis://localhost:6379')),
+    redisPrefix: str('REDIS_PREFIX', 'cw'),
     jwtAccessSecret: str('JWT_ACCESS_SECRET', devDefault('dev-access-secret-change-me')),
     jwtRefreshSecret: str('JWT_REFRESH_SECRET', devDefault('dev-refresh-secret-change-me')),
     jwtAccessTtlSec: int('JWT_ACCESS_TTL_SEC', 900),

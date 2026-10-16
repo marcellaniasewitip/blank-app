@@ -1,4 +1,7 @@
-import { Global, Injectable, Module } from '@nestjs/common';
+import { Global, Injectable, Module, OnModuleDestroy } from '@nestjs/common';
+import { Emitter } from '@socket.io/redis-emitter';
+import IORedis from 'ioredis';
+import { loadEnv } from '../config/env';
 import { OnGatewayConnection, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TokensService } from '../auth/tokens.service';
@@ -23,8 +26,11 @@ import { logger } from '../common/logger';
  */
 @Injectable()
 @WebSocketGateway({ namespace: '/realtime', cors: { origin: true, credentials: true }, transports: ['websocket', 'polling'] })
-export class RealtimeGateway implements OnGatewayConnection {
+export class RealtimeGateway implements OnGatewayConnection, OnModuleDestroy {
   @WebSocketServer() server?: { to(room: string): { emit(ev: string, payload: unknown): void } } & Partial<Server>;
+
+  private emitter?: Emitter;
+  private emitterRedis?: IORedis;
 
   /** Set by DriversModule to avoid a circular import. */
   onDriverLocation?: (userId: string, lat: number, lng: number) => Promise<void>;
@@ -66,11 +72,33 @@ export class RealtimeGateway implements OnGatewayConnection {
   }
 
   toUser(userId: string, event: string, payload: unknown): void {
-    this.server?.to(`user:${userId}`).emit(event, payload);
+    this.emit(`user:${userId}`, event, payload);
   }
 
   toAdmins(event: string, payload: unknown): void {
-    this.server?.to('admins').emit(event, payload);
+    this.emit('admins', event, payload);
+  }
+
+  /**
+   * In API processes the server (with the Redis adapter) fans out to every instance. In the worker
+   * process there is no socket server, so publish through the Redis emitter instead.
+   */
+  private emit(room: string, event: string, payload: unknown): void {
+    if (this.server) {
+      this.server.to(room).emit(event, payload);
+      return;
+    }
+    if (process.env.JOBS_DRIVER === 'memory') return;
+    if (!this.emitter) {
+      const env = loadEnv();
+      this.emitterRedis = new IORedis(env.redisUrl);
+      this.emitter = new Emitter(this.emitterRedis, { key: `${env.redisPrefix}:socket.io` });
+    }
+    this.emitter.of('/realtime').to(room).emit(event, payload as any);
+  }
+
+  onModuleDestroy(): void {
+    this.emitterRedis?.disconnect();
   }
 }
 
