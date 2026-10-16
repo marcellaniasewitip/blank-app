@@ -19,6 +19,7 @@ import { WalletService } from '../wallet/wallet.service';
 import { LedgerService } from '../wallet/ledger.service';
 import { PaymentsService } from '../payments/payments.service';
 import { RefundsService } from '../payments/refunds.service';
+import { PaymentProvidersRegistry } from '../payments/providers.registry';
 import { DisputesService } from '../disputes/disputes.service';
 import { ReportsService } from '../reports/reports.service';
 import { OrderTransitionsService } from '../orders/transitions.service';
@@ -330,6 +331,7 @@ export class AdminSettingsController {
   constructor(
     private readonly settings: SettingsService,
     private readonly audit: AuditService,
+    private readonly registry: PaymentProvidersRegistry,
   ) {}
 
   @Get()
@@ -341,6 +343,9 @@ export class AdminSettingsController {
   @Put(':key')
   @RequirePermissions('settings.edit')
   async set(@CurrentAdmin() a: AdminPrincipal, @Param('key') key: string, @Body() dto: SettingValueDto, @Ip() ip: string) {
+    if (key === 'payment.cellmoney.adapter' && !this.registry.names().includes(String(dto.value))) {
+      throw Errors.invalid('unknown_adapter', `Adapter must be one of: ${this.registry.names().join(', ')}`);
+    }
     const before = (await this.settings.getAll())[key];
     await this.settings.set(key, dto.value, a.id);
     await this.audit.log({ actorId: a.id, actorType: 'admin', action: 'setting.update', entity: 'setting', entityId: key, before: before?.value, after: dto.value, ip });

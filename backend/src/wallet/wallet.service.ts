@@ -114,7 +114,11 @@ export class WalletService {
       take: limit + 1,
       include: { driver: { include: { user: { select: { name: true, phone: true } } } }, payment: true },
     });
-    return toPage(rows, limit);
+    const page = toPage(rows, limit);
+    const items = await Promise.all(
+      page.items.map(async (t) => ({ ...t, proofUrl: t.proofFileKey ? await this.storage.presignDownload(t.proofFileKey).catch(() => null) : null })),
+    );
+    return { items, nextCursor: page.nextCursor };
   }
 
   /** Credit a top-up. Called by admin approval and by successful cell money collections. Idempotent. */

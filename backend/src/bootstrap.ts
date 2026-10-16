@@ -26,7 +26,7 @@ export function configureApp(app: INestApplication): void {
   const env = loadEnv();
   app.setGlobalPrefix('api/v1', { exclude: [{ path: 'health', method: RequestMethod.GET }] });
   app.use(helmet());
-  app.enableCors({ origin: env.corsOrigins, credentials: true, allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key'] });
+  app.enableCors({ origin: env.corsOrigins, credentials: true, allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key'], exposedHeaders: ['Content-Disposition', 'Idempotent-Replay'] });
   (app as NestExpressApplication).set?.('trust proxy', 1);
   (app as NestExpressApplication).useBodyParser?.('json', { limit: '1mb' });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true, transformOptions: { enableImplicitConversion: false } }));

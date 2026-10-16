@@ -111,6 +111,8 @@ describe('auth, RBAC, onboarding, notifications, reports (integration)', () => {
     const bad = await h.http().put('/api/v1/admin/settings/commission.type').set(bearer(admin)).send({ value: 'weird' });
     expect(bad.status).toBe(422);
     await h.http().put('/api/v1/admin/settings/wallet.min_balance_toea').set(bearer(admin)).send({ value: 8000 }).expect(200);
+    const badAdapter = await h.http().put('/api/v1/admin/settings/payment.cellmoney.adapter').set(bearer(admin)).send({ value: 'nope' });
+    expect(badAdapter.body.error.code).toBe('unknown_adapter');
     const all = await h.http().get('/api/v1/admin/settings').set(bearer(admin)).expect(200);
     expect(all.body['wallet.min_balance_toea']).toEqual({ value: 8000, isDefault: false });
     const log = await h.prisma.auditLog.findFirstOrThrow({ where: { action: 'setting.update' } });

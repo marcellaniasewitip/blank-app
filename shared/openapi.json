@@ -4442,6 +4442,12 @@
       "DepotDto": {
         "type": "object",
         "properties": {
+          "geofencePolygon": {
+            "type": "object",
+            "nullable": true,
+            "description": "GeoJSON Polygon; null clears it",
+            "additionalProperties": true
+          },
           "name": {
             "type": "string",
             "minLength": 1,
@@ -4458,29 +4464,6 @@
             "nullable": true,
             "minimum": 10,
             "maximum": 5000
-          },
-          "geofencePolygon": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "required": true,
-                "type": "string"
-              },
-              "coordinates": {
-                "type": "array",
-                "items": {
-                  "name": "coordinates",
-                  "type": "array",
-                  "items": {
-                    "required": true,
-                    "type": "array",
-                    "items": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
-            }
           },
           "active": {
             "type": "boolean"
@@ -4489,13 +4472,18 @@
         "required": [
           "name",
           "lat",
-          "lng",
-          "geofencePolygon"
+          "lng"
         ]
       },
       "UpdateDepotDto": {
         "type": "object",
         "properties": {
+          "geofencePolygon": {
+            "type": "object",
+            "nullable": true,
+            "description": "GeoJSON Polygon; null clears it",
+            "additionalProperties": true
+          },
           "name": {
             "type": "string",
             "minLength": 1,
@@ -4513,36 +4501,10 @@
             "minimum": 10,
             "maximum": 5000
           },
-          "geofencePolygon": {
-            "type": "object",
-            "properties": {
-              "type": {
-                "required": true,
-                "type": "string"
-              },
-              "coordinates": {
-                "type": "array",
-                "items": {
-                  "name": "coordinates",
-                  "type": "array",
-                  "items": {
-                    "required": true,
-                    "type": "array",
-                    "items": {
-                      "type": "number"
-                    }
-                  }
-                }
-              }
-            }
-          },
           "active": {
             "type": "boolean"
           }
-        },
-        "required": [
-          "geofencePolygon"
-        ]
+        }
       },
       "PackageDto": {
         "type": "object",
@@ -4601,8 +4563,22 @@
         "type": "object",
         "properties": {
           "value": {
-            "type": "object",
-            "description": "JSON value; type must match the setting."
+            "description": "Any JSON value (number, string, boolean or list)",
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {}
+              }
+            ]
           }
         },
         "required": [

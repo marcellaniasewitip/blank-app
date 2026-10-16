@@ -16,6 +16,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
 import { CursorQuery } from '../common/pagination';
 
 export class ReasonDto {
@@ -95,6 +96,7 @@ export class DepotDto {
   geofenceRadiusM?: number | null;
 
   /** GeoJSON Polygon `{ type: 'Polygon', coordinates: [[[lng, lat], ...]] }`. */
+  @ApiPropertyOptional({ type: 'object', nullable: true, description: 'GeoJSON Polygon; null clears it', additionalProperties: true })
   @IsOptional()
   @IsObject()
   geofencePolygon?: { type: 'Polygon'; coordinates: number[][][] } | null;
@@ -109,6 +111,7 @@ export class UpdateDepotDto {
   @IsOptional() @IsLatitude() lat?: number;
   @IsOptional() @IsLongitude() lng?: number;
   @IsOptional() @IsInt() @Min(10) @Max(5000) geofenceRadiusM?: number | null;
+  @ApiPropertyOptional({ type: 'object', nullable: true, description: 'GeoJSON Polygon; null clears it', additionalProperties: true })
   @IsOptional() @IsObject() geofencePolygon?: { type: 'Polygon'; coordinates: number[][][] } | null;
   @IsOptional() @IsBoolean() active?: boolean;
 }
@@ -151,6 +154,7 @@ export class TruckUpdateDto {
 
 export class SettingValueDto {
   /** JSON value; type must match the setting. */
+  @ApiProperty({ description: 'Any JSON value (number, string, boolean or list)', oneOf: [{ type: 'number' }, { type: 'string' }, { type: 'boolean' }, { type: 'array', items: {} }] })
   @Allow()
   value: unknown;
 }

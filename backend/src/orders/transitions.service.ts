@@ -99,7 +99,8 @@ export class OrderTransitionsService {
     await tx.orderEvent.create({
       data: {
         orderId: order.id,
-        fromStatus: from,
+        // A COD order is created straight into dispatch; record it as a creation, not a payment step.
+        fromStatus: opts.metadata?.created ? null : from,
         toStatus: to,
         actorType: actor.type,
         actorId: actor.id,

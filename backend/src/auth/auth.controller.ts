@@ -8,11 +8,13 @@ import { AdminAuthService } from './admin-auth.service';
 import { TokensService } from './tokens.service';
 import { AdminPrincipal } from './auth.types';
 
+// Strict per-IP limits only on credential-guessing endpoints. They stay generous because PNG mobile
+// networks put many users behind carrier-grade NAT; per-phone OTP limits (OtpService) are the real brake.
+// Session endpoints (refresh, me, TOTP setup) use the global per-account budget.
+const CREDENTIAL_LIMIT = { default: { limit: 30, ttl: 60_000 } };
+
 @ApiTags('auth')
 @Controller('auth')
-// Per-IP limits are generous: PNG mobile networks put many users behind carrier-grade NAT.
-// Per-phone OTP limits (DB-backed, see OtpService) are the real brake.
-@Throttle({ default: { limit: 30, ttl: 60_000 } })
 export class AuthController {
   constructor(
     private readonly users: UserAuthService,
@@ -32,6 +34,7 @@ export class AuthController {
   /** Verify the code; registers the account on first sign-in. */
   @Public()
   @Post('otp/verify')
+  @Throttle(CREDENTIAL_LIMIT)
   @HttpCode(200)
   verifyOtp(@Body() dto: VerifyOtpDto) {
     return this.users.verifyOtp(dto.phone, dto.code, dto.app, dto.name);
@@ -54,6 +57,7 @@ export class AuthController {
 
   @Public()
   @Post('admin/login')
+  @Throttle(CREDENTIAL_LIMIT)
   @HttpCode(200)
   adminLogin(@Body() dto: AdminLoginDto, @Ip() ip: string) {
     return this.admins.login(dto.email, dto.password, ip ?? null);
@@ -61,6 +65,7 @@ export class AuthController {
 
   @Public()
   @Post('admin/totp/verify')
+  @Throttle(CREDENTIAL_LIMIT)
   @HttpCode(200)
   adminTotpVerify(@Body() dto: AdminTotpVerifyDto, @Ip() ip: string) {
     return this.admins.verifyTotp(dto.mfaToken, dto.code, ip ?? null);
