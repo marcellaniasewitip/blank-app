@@ -1,0 +1,94 @@
+/**
+ * Environment configuration. Secrets come from environment variables only (§12).
+ * Validated once at boot; the process refuses to start with missing required values in production.
+ */
+function str(name: string, fallback?: string): string {
+  const v = process.env[name];
+  if (v !== undefined && v !== '') return v;
+  if (fallback !== undefined) return fallback;
+  throw new Error(`Missing required environment variable ${name}`);
+}
+
+function int(name: string, fallback: number): number {
+  const v = process.env[name];
+  if (v === undefined || v === '') return fallback;
+  const n = Number.parseInt(v, 10);
+  if (Number.isNaN(n)) throw new Error(`Environment variable ${name} must be an integer`);
+  return n;
+}
+
+function bool(name: string, fallback: boolean): boolean {
+  const v = process.env[name];
+  if (v === undefined || v === '') return fallback;
+  return v === 'true' || v === '1';
+}
+
+export interface Env {
+  nodeEnv: string;
+  isProd: boolean;
+  isTest: boolean;
+  port: number;
+  databaseUrl: string;
+  redisUrl: string;
+  jwtAccessSecret: string;
+  jwtRefreshSecret: string;
+  jwtAccessTtlSec: number;
+  jwtRefreshTtlSec: number;
+  corsOrigins: string[];
+  s3Bucket: string;
+  s3Region: string;
+  s3Endpoint?: string;
+  s3ForcePathStyle: boolean;
+  smsProvider: string;
+  pushProvider: string;
+  fcmServiceAccountB64?: string;
+  mockCellmoneyWebhookSecret: string;
+  sentryDsn?: string;
+  logLevel: string;
+  runWorkers: boolean;
+}
+
+let cached: Env | undefined;
+
+export function loadEnv(): Env {
+  if (cached) return cached;
+  const nodeEnv = str('NODE_ENV', 'development');
+  const isProd = nodeEnv === 'production';
+  const devDefault = (v: string) => (isProd ? undefined : v);
+  cached = {
+    nodeEnv,
+    isProd,
+    isTest: nodeEnv === 'test',
+    port: int('PORT', 3000),
+    databaseUrl: str('DATABASE_URL'),
+    redisUrl: str('REDIS_URL', devDefault('redis://localhost:6379')),
+    jwtAccessSecret: str('JWT_ACCESS_SECRET', devDefault('dev-access-secret-change-me')),
+    jwtRefreshSecret: str('JWT_REFRESH_SECRET', devDefault('dev-refresh-secret-change-me')),
+    jwtAccessTtlSec: int('JWT_ACCESS_TTL_SEC', 900),
+    jwtRefreshTtlSec: int('JWT_REFRESH_TTL_SEC', 30 * 24 * 3600),
+    corsOrigins: str('CORS_ORIGINS', 'http://localhost:5173')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+    s3Bucket: str('S3_BUCKET', devDefault('cooper-waters-dev')),
+    s3Region: str('S3_REGION', 'ap-southeast-2'),
+    s3Endpoint: process.env.S3_ENDPOINT || undefined,
+    s3ForcePathStyle: bool('S3_FORCE_PATH_STYLE', false),
+    smsProvider: str('SMS_PROVIDER', 'mock'),
+    pushProvider: str('PUSH_PROVIDER', 'mock'),
+    fcmServiceAccountB64: process.env.FCM_SERVICE_ACCOUNT_B64 || undefined,
+    mockCellmoneyWebhookSecret: str('MOCK_CELLMONEY_WEBHOOK_SECRET', devDefault('dev-webhook-secret')),
+    sentryDsn: process.env.SENTRY_DSN || undefined,
+    logLevel: str('LOG_LEVEL', 'info'),
+    runWorkers: bool('RUN_WORKERS', true),
+  };
+  if (isProd && cached.mockCellmoneyWebhookSecret === 'dev-webhook-secret') {
+    throw new Error('Refusing to start in production with the dev webhook secret');
+  }
+  return cached;
+}
+
+/** Test helper: forget the cached env so tests can change process.env. */
+export function resetEnvCache(): void {
+  cached = undefined;
+}

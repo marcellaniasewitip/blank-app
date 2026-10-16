@@ -1,0 +1,737 @@
+// Cooper Waters — Phase 1 data model.
+// Conventions: UUID ids, created_at/updated_at everywhere, money as integer toea (1 PGK = 100 toea),
+// timestamps stored in UTC. Geo queries use PostGIS via raw SQL on lat/lng columns (see migrations).
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum UserRole {
+  customer
+  driver
+}
+
+enum UserStatus {
+  active
+  suspended
+}
+
+enum AdminStatus {
+  active
+  disabled
+}
+
+enum DriverStatus {
+  pending_docs
+  pending_approval
+  approved
+  rejected
+  suspended
+}
+
+enum DocumentStatus {
+  pending
+  approved
+  rejected
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  SEARCHING
+  ACCEPTED
+  LOADING
+  EN_ROUTE
+  ARRIVED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  FAILED
+  DISPUTED
+}
+
+enum PaymentMethod {
+  cod
+  cellmoney
+}
+
+enum OrderPaymentStatus {
+  unpaid
+  pending
+  paid
+  failed
+  refund_pending
+  refunded
+}
+
+enum ActorType {
+  customer
+  driver
+  admin
+  system
+}
+
+enum OfferResponse {
+  accepted
+  declined
+  missed
+}
+
+enum WalletOwnerType {
+  driver
+  platform
+  customer_refund
+}
+
+enum LedgerType {
+  topup
+  commission
+  order_earning
+  refund
+  adjustment
+  payout
+}
+
+enum TopupMethod {
+  bank_transfer
+  cellmoney
+}
+
+enum TopupStatus {
+  pending
+  approved
+  rejected
+  failed
+}
+
+enum PaymentProviderKind {
+  cellmoney
+  bank
+  cash
+}
+
+enum PaymentDirection {
+  in
+  out
+}
+
+enum PaymentStatus {
+  initiated
+  pending
+  succeeded
+  failed
+  reversed
+  expired
+}
+
+enum PaymentPurpose {
+  order
+  topup
+  refund
+  payout
+}
+
+enum PayoutStatus {
+  requested
+  approved
+  paid
+  rejected
+}
+
+enum DisputeStatus {
+  open
+  investigating
+  resolved
+  rejected
+}
+
+enum NotificationChannel {
+  push
+  sms
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  failed
+  skipped
+}
+
+// ───────────────────────────── Identity ─────────────────────────────
+
+model User {
+  id              String     @id @default(uuid()) @db.Uuid
+  phone           String     @unique // E.164
+  name            String?
+  role            UserRole
+  status          UserStatus @default(active)
+  phoneVerifiedAt DateTime?  @map("phone_verified_at")
+  fcmToken        String?    @map("fcm_token")
+  deletedAt       DateTime?  @map("deleted_at")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  driver         Driver?
+  locations      CustomerLocation[]
+  customerOrders Order[]            @relation("CustomerOrders")
+  refreshTokens  RefreshToken[]
+  notifications  Notification[]
+  ratingsGiven   Rating[]           @relation("RatingCustomer")
+  disputesRaised Dispute[]          @relation("DisputeRaisedBy")
+
+  @@index([role, status])
+  @@map("users")
+}
+
+model OtpCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  phone     String
+  codeHash  String    @map("code_hash")
+  expiresAt DateTime  @map("expires_at")
+  attempts  Int       @default(0)
+  usedAt    DateTime? @map("used_at")
+  ip        String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([phone, createdAt])
+  @@index([ip, createdAt])
+  @@map("otp_codes")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid()) @db.Uuid
+  subjectId   String    @map("subject_id") @db.Uuid
+  subjectType String    @map("subject_type") // user | admin
+  tokenHash   String    @unique @map("token_hash")
+  expiresAt   DateTime  @map("expires_at")
+  revokedAt   DateTime? @map("revoked_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  user        User?     @relation(fields: [userId], references: [id])
+  userId      String?   @map("user_id") @db.Uuid
+
+  @@index([subjectId])
+  @@map("refresh_tokens")
+}
+
+model AdminUser {
+  id           String      @id @default(uuid()) @db.Uuid
+  email        String      @unique
+  name         String
+  passwordHash String      @map("password_hash")
+  totpSecret   String?     @map("totp_secret")
+  totpEnabled  Boolean     @default(false) @map("totp_enabled")
+  roleId       String      @map("role_id") @db.Uuid
+  status       AdminStatus @default(active)
+  lastLoginAt  DateTime?   @map("last_login_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@map("admin_users")
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String           @unique
+  description String?
+  isSystem    Boolean          @default(false) @map("is_system")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  permissions RolePermission[]
+  admins      AdminUser[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  key         String           @unique
+  description String?
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ───────────────────────────── Customers ─────────────────────────────
+
+model CustomerLocation {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  label         String
+  addressText   String    @map("address_text")
+  lat           Float
+  lng           Float
+  landmarkNotes String    @default("") @map("landmark_notes")
+  deletedAt     DateTime? @map("deleted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  user          User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("customer_locations")
+}
+
+// ───────────────────────────── Drivers & fleet ─────────────────────────────
+
+model Driver {
+  id           String       @id @default(uuid()) @db.Uuid
+  userId       String       @unique @map("user_id") @db.Uuid
+  // Phase 2: operatorId to support an Operator/Owner with many trucks.
+  operatorId   String?      @map("operator_id") @db.Uuid
+  status       DriverStatus @default(pending_docs)
+  online       Boolean      @default(false)
+  currentLat   Float?       @map("current_lat")
+  currentLng   Float?       @map("current_lng")
+  lastSeenAt   DateTime?    @map("last_seen_at")
+  ratingAvg    Float        @default(0) @map("rating_avg")
+  ratingCount  Int          @default(0) @map("rating_count")
+  rejectReason String?      @map("reject_reason")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  user      User             @relation(fields: [userId], references: [id])
+  documents DriverDocument[]
+  trucks    Truck[]
+  orders    Order[]          @relation("DriverOrders")
+  offers    OrderOffer[]
+  topups    TopupRequest[]
+  payouts   Payout[]
+  ratings   Rating[]
+
+  @@index([status, online])
+  @@map("drivers")
+}
+
+model DriverDocument {
+  id         String         @id @default(uuid()) @db.Uuid
+  driverId   String         @map("driver_id") @db.Uuid
+  type       String // configurable list, see setting driver.required_documents
+  fileKey    String         @map("file_key")
+  status     DocumentStatus @default(pending)
+  reviewerId String?        @map("reviewer_id") @db.Uuid
+  notes      String?
+  reviewedAt DateTime?      @map("reviewed_at")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+  driver     Driver         @relation(fields: [driverId], references: [id])
+
+  @@index([driverId, type])
+  @@map("driver_documents")
+}
+
+model Truck {
+  id             String    @id @default(uuid()) @db.Uuid
+  driverId       String    @map("driver_id") @db.Uuid
+  // Phase 2: operatorId — trucks will belong to an operator and be assigned to drivers.
+  operatorId     String?   @map("operator_id") @db.Uuid
+  plate          String    @unique
+  capacityLitres Int       @map("capacity_litres")
+  photoKey       String?   @map("photo_key")
+  active         Boolean   @default(true)
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  driver         Driver    @relation(fields: [driverId], references: [id])
+
+  @@map("trucks")
+}
+
+model Depot {
+  id              String    @id @default(uuid()) @db.Uuid
+  name            String
+  lat             Float
+  lng             Float
+  // Null → use setting depot.geofence_radius_m
+  geofenceRadiusM Int?      @map("geofence_radius_m")
+  // Optional GeoJSON Polygon; when set it takes precedence over point+radius.
+  geofencePolygon Json?     @map("geofence_polygon")
+  active          Boolean   @default(true)
+  deletedAt       DateTime? @map("deleted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("depots")
+}
+
+model Package {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  volumeLitres Int       @map("volume_litres")
+  priceToea    Int       @map("price_toea")
+  active       Boolean   @default(true)
+  sortOrder    Int       @default(0) @map("sort_order")
+  deletedAt    DateTime? @map("deleted_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  orders       Order[]
+
+  @@map("packages")
+}
+
+// ───────────────────────────── Orders ─────────────────────────────
+
+model Order {
+  id                  String             @id @default(uuid()) @db.Uuid
+  shortCode           String             @unique @map("short_code")
+  customerId          String             @map("customer_id") @db.Uuid
+  driverId            String?            @map("driver_id") @db.Uuid
+  packageId           String             @map("package_id") @db.Uuid
+  quantity            Int
+  unitPriceToea       Int                @map("unit_price_toea")
+  priceToea           Int                @map("price_toea")
+  commissionToea      Int                @map("commission_toea")
+  commissionType      String             @map("commission_type")
+  commissionValue     Float              @map("commission_value")
+  commissionDeductAt  String             @map("commission_deduct_at")
+  commissionDeducted  Boolean            @default(false) @map("commission_deducted")
+  deliveryLat         Float              @map("delivery_lat")
+  deliveryLng         Float              @map("delivery_lng")
+  deliveryAddress     String             @map("delivery_address")
+  deliveryNotes       String             @default("") @map("delivery_notes")
+  paymentMethod       PaymentMethod      @map("payment_method")
+  paymentStatus       OrderPaymentStatus @default(unpaid) @map("payment_status")
+  status              OrderStatus
+  statusBeforeDispute OrderStatus?       @map("status_before_dispute")
+  cancelReason        String?            @map("cancel_reason")
+  dispatchRound       Int                @default(0) @map("dispatch_round")
+  expiresAt           DateTime?          @map("expires_at")
+  proofPhotoKey       String?            @map("proof_photo_key")
+  settledAt           DateTime?          @map("settled_at")
+  paymentPendingAt    DateTime?          @map("payment_pending_at")
+  searchingAt         DateTime?          @map("searching_at")
+  acceptedAt          DateTime?          @map("accepted_at")
+  loadingAt           DateTime?          @map("loading_at")
+  enRouteAt           DateTime?          @map("en_route_at")
+  arrivedAt           DateTime?          @map("arrived_at")
+  deliveredAt         DateTime?          @map("delivered_at")
+  completedAt         DateTime?          @map("completed_at")
+  cancelledAt         DateTime?          @map("cancelled_at")
+  expiredAt           DateTime?          @map("expired_at")
+  failedAt            DateTime?          @map("failed_at")
+  disputedAt          DateTime?          @map("disputed_at")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+
+  customer User         @relation("CustomerOrders", fields: [customerId], references: [id])
+  driver   Driver?      @relation("DriverOrders", fields: [driverId], references: [id])
+  package  Package      @relation(fields: [packageId], references: [id])
+  events   OrderEvent[]
+  offers   OrderOffer[]
+  disputes Dispute[]
+  rating   Rating?
+
+  @@index([status, expiresAt])
+  @@index([customerId, createdAt])
+  @@index([driverId, status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderEvent {
+  id         String       @id @default(uuid()) @db.Uuid
+  orderId    String       @map("order_id") @db.Uuid
+  fromStatus OrderStatus? @map("from_status")
+  toStatus   OrderStatus  @map("to_status")
+  actorType  ActorType    @map("actor_type")
+  actorId    String?      @map("actor_id") @db.Uuid
+  metadata   Json?
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  order      Order        @relation(fields: [orderId], references: [id])
+
+  @@index([orderId, createdAt])
+  @@map("order_events")
+}
+
+model OrderOffer {
+  id          String         @id @default(uuid()) @db.Uuid
+  orderId     String         @map("order_id") @db.Uuid
+  driverId    String         @map("driver_id") @db.Uuid
+  round       Int
+  distanceM   Int            @map("distance_m")
+  sentAt      DateTime       @default(now()) @map("sent_at")
+  response    OfferResponse?
+  respondedAt DateTime?      @map("responded_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  order       Order          @relation(fields: [orderId], references: [id])
+  driver      Driver         @relation(fields: [driverId], references: [id])
+
+  @@unique([orderId, driverId, round])
+  @@index([driverId, response])
+  @@map("order_offers")
+}
+
+// ───────────────────────────── Money ─────────────────────────────
+
+model Wallet {
+  id          String          @id @default(uuid()) @db.Uuid
+  ownerType   WalletOwnerType @map("owner_type")
+  ownerId     String          @map("owner_id") @db.Uuid
+  // Cached sum of ledger entries; updated in the same transaction as each entry.
+  balanceToea Int             @default(0) @map("balance_toea")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  entries     LedgerEntry[]
+
+  @@unique([ownerType, ownerId])
+  @@map("wallets")
+}
+
+// Append-only. A DB trigger (see migration) rejects UPDATE and DELETE.
+model LedgerEntry {
+  id             String     @id @default(uuid()) @db.Uuid
+  walletId       String     @map("wallet_id") @db.Uuid
+  amountToea     Int        @map("amount_toea")
+  balanceAfter   Int        @map("balance_after")
+  type           LedgerType
+  referenceType  String     @map("reference_type")
+  referenceId    String     @map("reference_id")
+  idempotencyKey String     @unique @map("idempotency_key")
+  description    String?
+  createdBy      String     @map("created_by") // "system" | "admin:<id>" | "driver:<id>"
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @default(now()) @map("updated_at")
+  wallet         Wallet     @relation(fields: [walletId], references: [id])
+
+  @@index([walletId, createdAt])
+  @@index([referenceType, referenceId])
+  @@map("ledger_entries")
+}
+
+model TopupRequest {
+  id             String      @id @default(uuid()) @db.Uuid
+  driverId       String      @map("driver_id") @db.Uuid
+  method         TopupMethod
+  amountToea     Int         @map("amount_toea")
+  referenceText  String      @default("") @map("reference_text")
+  msisdn         String?
+  proofFileKey   String?     @map("proof_file_key")
+  status         TopupStatus @default(pending)
+  rejectReason   String?     @map("reject_reason")
+  reviewedBy     String?     @map("reviewed_by") @db.Uuid
+  reviewedAt     DateTime?   @map("reviewed_at")
+  paymentId      String?     @unique @map("payment_id") @db.Uuid
+  idempotencyKey String      @unique @map("idempotency_key")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  driver         Driver      @relation(fields: [driverId], references: [id])
+  payment        Payment?    @relation(fields: [paymentId], references: [id])
+
+  @@index([status, createdAt])
+  @@map("topup_requests")
+}
+
+model Payment {
+  id             String              @id @default(uuid()) @db.Uuid
+  provider       PaymentProviderKind
+  adapter        String // e.g. manual | mock | <provider name>
+  direction      PaymentDirection
+  amountToea     Int                 @map("amount_toea")
+  feeToea        Int                 @default(0) @map("fee_toea")
+  // Snapshot of payment.cellmoney.fee_bearer at initiation: customer | driver | platform
+  feeBearer      String              @default("platform") @map("fee_bearer")
+  status         PaymentStatus       @default(initiated)
+  providerRef    String?             @map("provider_ref")
+  msisdn         String?
+  reference      String // human reference given to the customer, e.g. order short code
+  purpose        PaymentPurpose
+  purposeId      String              @map("purpose_id") @db.Uuid
+  rawPayload     Json?               @map("raw_payload")
+  failureReason  String?             @map("failure_reason")
+  idempotencyKey String              @unique @map("idempotency_key")
+  expiresAt      DateTime?           @map("expires_at")
+  settledAt      DateTime?           @map("settled_at")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  topup          TopupRequest?
+
+  @@unique([adapter, providerRef])
+  @@index([purpose, purposeId])
+  @@index([status, expiresAt])
+  @@map("payments")
+}
+
+model WebhookEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  provider    String
+  eventKey    String    @map("event_key") // provider event id or provider_ref+status
+  signatureOk Boolean   @map("signature_ok")
+  headers     Json
+  rawBody     String    @map("raw_body")
+  processedAt DateTime? @map("processed_at")
+  error       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([provider, eventKey])
+  @@map("webhook_events")
+}
+
+model Payout {
+  id             String       @id @default(uuid()) @db.Uuid
+  driverId       String       @map("driver_id") @db.Uuid
+  amountToea     Int          @map("amount_toea")
+  method         String // cellmoney | bank_transfer
+  destination    String // msisdn or bank account text
+  status         PayoutStatus @default(requested)
+  processedBy    String?      @map("processed_by") @db.Uuid
+  processedAt    DateTime?    @map("processed_at")
+  externalRef    String?      @map("external_ref")
+  notes          String?
+  idempotencyKey String       @unique @map("idempotency_key")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  driver         Driver       @relation(fields: [driverId], references: [id])
+
+  @@index([status, createdAt])
+  @@map("payouts")
+}
+
+// ───────────────────────────── Trust & safety ─────────────────────────────
+
+model Dispute {
+  id              String        @id @default(uuid()) @db.Uuid
+  orderId         String        @map("order_id") @db.Uuid
+  raisedById      String        @map("raised_by") @db.Uuid
+  raisedByType    ActorType     @map("raised_by_type")
+  category        String
+  description     String
+  status          DisputeStatus @default(open)
+  outcome         String? // favour_driver | favour_customer
+  refundToea      Int?          @map("refund_toea")
+  resolutionNotes String?       @map("resolution_notes")
+  resolvedBy      String?       @map("resolved_by") @db.Uuid
+  resolvedAt      DateTime?     @map("resolved_at")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  order           Order         @relation(fields: [orderId], references: [id])
+  raisedBy        User          @relation("DisputeRaisedBy", fields: [raisedById], references: [id])
+
+  @@index([status, createdAt])
+  @@map("disputes")
+}
+
+model Rating {
+  id         String   @id @default(uuid()) @db.Uuid
+  orderId    String   @unique @map("order_id") @db.Uuid
+  customerId String   @map("customer_id") @db.Uuid
+  driverId   String   @map("driver_id") @db.Uuid
+  stars      Int
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  order      Order    @relation(fields: [orderId], references: [id])
+  customer   User     @relation("RatingCustomer", fields: [customerId], references: [id])
+  driver     Driver   @relation(fields: [driverId], references: [id])
+
+  @@map("ratings")
+}
+
+// ───────────────────────────── Notifications ─────────────────────────────
+
+model NotificationTemplate {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique // e.g. order.accepted
+  pushTitle String?  @map("push_title")
+  pushBody  String?  @map("push_body")
+  smsBody   String?  @map("sms_body") // ≤160 chars, GSM-7 only
+  critical  Boolean  @default(false) // critical → SMS is always sent too
+  updatedBy String?  @map("updated_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_templates")
+}
+
+model Notification {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String?             @map("user_id") @db.Uuid
+  phone     String?
+  channel   NotificationChannel
+  template  String
+  payload   Json
+  status    NotificationStatus  @default(queued)
+  attempts  Int                 @default(0)
+  lastError String?             @map("last_error")
+  sentAt    DateTime?           @map("sent_at")
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+  user      User?               @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("notifications")
+}
+
+// ───────────────────────────── Platform ─────────────────────────────
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedBy String?  @map("updated_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  actorType String   @map("actor_type")
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  before    Json?
+  after     Json?
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([entity, entityId])
+  @@index([actorId, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model IdempotencyRecord {
+  id           String   @id @default(uuid()) @db.Uuid
+  key          String
+  scope        String // "<subjectId>:<METHOD> <route>"
+  requestHash  String   @map("request_hash")
+  status       String // in_progress | completed
+  responseCode Int?     @map("response_code")
+  responseBody Json?    @map("response_body")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([scope, key])
+  @@index([createdAt])
+  @@map("idempotency_records")
+}
