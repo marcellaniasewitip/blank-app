@@ -1,0 +1,16 @@
+# Copy to terraform.tfvars (gitignored) and adjust.
+region      = "ap-southeast-2"
+environment = "prod"
+
+# api_domain          = "api.cooperwaters.com.pg"
+# api_certificate_arn = "arn:aws:acm:ap-southeast-2:123456789012:certificate/..."
+# admin_domain          = "admin.cooperwaters.com.pg"
+# admin_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
+
+github_repository = "marcellaniasewitip/blank-app"
+# alarm_email     = "ops@cooperwaters.com.pg"
+
+# Staging can be cheaper:
+# db_multi_az       = false
+# db_instance_class = "db.t4g.micro"
+# api_desired_count = 1

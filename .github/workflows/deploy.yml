@@ -1,0 +1,97 @@
+name: Deploy to AWS
+
+# Builds the API image, runs DB migrations as a one-off ECS task, rolls the API and worker services,
+# then publishes the admin dashboard to S3 + CloudFront.
+#
+# One-time setup (see docs/deployment-aws.md):
+#   repo secret  AWS_DEPLOY_ROLE_ARN  ← terraform output deploy_role_arn
+#   repo vars    AWS_REGION (ap-southeast-2), NAME_PREFIX (cooper-waters-prod), ECR_REPOSITORY_URL,
+#                ADMIN_BUCKET, CLOUDFRONT_DISTRIBUTION_ID, API_PUBLIC_URL, PRIVATE_SUBNET_IDS (comma-separated),
+#                APP_SECURITY_GROUP_ID
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      CLUSTER: ${{ vars.NAME_PREFIX }}
+      IMAGE: ${{ vars.ECR_REPOSITORY_URL }}:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push API image
+        run: |
+          docker build --build-arg APP_VERSION=${{ github.sha }} -t "$IMAGE" backend
+          docker push "$IMAGE"
+
+      - name: Register task definitions with the new image
+        id: taskdefs
+        run: |
+          for svc in api worker migrate; do
+            family="$CLUSTER-$svc"
+            aws ecs describe-task-definition --task-definition "$family" --query taskDefinition > td.json
+            jq --arg img "$IMAGE" --arg ver "${{ github.sha }}" '
+              .containerDefinitions |= map(.image = $img | .environment = ((.environment // []) | map(select(.name != "APP_VERSION")) + [{name:"APP_VERSION", value:$ver}]))
+              | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' td.json > td-new.json
+            arn=$(aws ecs register-task-definition --cli-input-json file://td-new.json --query taskDefinition.taskDefinitionArn --output text)
+            echo "$svc=$arn" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Run database migrations
+        run: |
+          task=$(aws ecs run-task --cluster "$CLUSTER" --launch-type FARGATE \
+            --task-definition "${{ steps.taskdefs.outputs.migrate }}" \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ vars.PRIVATE_SUBNET_IDS }}],securityGroups=[${{ vars.APP_SECURITY_GROUP_ID }}],assignPublicIp=DISABLED}" \
+            --query 'tasks[0].taskArn' --output text)
+          echo "migration task $task"
+          aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$task"
+          code=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$task" --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "exit code $code"
+          test "$code" = "0"
+
+      - name: Roll services
+        run: |
+          aws ecs update-service --cluster "$CLUSTER" --service api --task-definition "${{ steps.taskdefs.outputs.api }}" > /dev/null
+          aws ecs update-service --cluster "$CLUSTER" --service worker --task-definition "${{ steps.taskdefs.outputs.worker }}" > /dev/null
+          aws ecs wait services-stable --cluster "$CLUSTER" --services api worker
+
+      - name: Smoke test
+        run: curl -fsS "${{ vars.API_PUBLIC_URL }}/health"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Build and publish admin dashboard
+        working-directory: admin
+        env:
+          VITE_API_BASE_URL: ${{ vars.API_PUBLIC_URL }}
+        run: |
+          npm ci
+          npm run build
+          aws s3 sync dist "s3://${{ vars.ADMIN_BUCKET }}" --delete --cache-control "public,max-age=31536000,immutable" --exclude index.html
+          aws s3 cp dist/index.html "s3://${{ vars.ADMIN_BUCKET }}/index.html" --cache-control "no-cache"
+          aws cloudfront create-invalidation --distribution-id "${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}" --paths "/index.html" "/"

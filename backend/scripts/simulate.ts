@@ -155,7 +155,7 @@ async function main() {
     sockets.push(customerSock);
     const dropoff = { lat: depot.lat - 0.004, lng: depot.lng + 0.004, address: 'Section 21, Lot 7, Waigani', notes: 'Green house behind the church' };
 
-    async function runOrder(paymentMethod: 'cod' | 'cellmoney') {
+    const runOrder = async (paymentMethod: 'cod' | 'cellmoney') => {
       step(`${paymentMethod.toUpperCase()} order`);
       const walletBefore = (await api('GET', '/driver/wallet', { token: driverToken })).balanceToea as number;
       const offerP = waitFor(driverSock, 'order.offer', () => true, 30000);
@@ -196,7 +196,7 @@ async function main() {
       ok(`driver wallet ${kina(walletBefore)} → ${kina(walletAfter)} (commission ${kina(commission)})`);
       const events = await prisma.orderEvent.count({ where: { orderId, toStatus: 'SEARCHING' } });
       if (events !== 1) throw new Error(`expected exactly one SEARCHING event, got ${events}`);
-    }
+    };
 
     await runOrder('cellmoney');
     await runOrder('cod');

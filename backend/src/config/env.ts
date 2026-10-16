@@ -75,18 +75,22 @@ export function loadEnv(): Env {
       .filter(Boolean),
     s3Bucket: str('S3_BUCKET', devDefault('cooper-waters-dev')),
     s3Region: str('S3_REGION', 'ap-southeast-2'),
-    s3Endpoint: process.env.S3_ENDPOINT || undefined,
+    s3Endpoint: process.env.S3_ENDPOINT?.trim() || undefined,
     s3ForcePathStyle: bool('S3_FORCE_PATH_STYLE', false),
     smsProvider: str('SMS_PROVIDER', 'mock'),
     pushProvider: str('PUSH_PROVIDER', 'mock'),
-    fcmServiceAccountB64: process.env.FCM_SERVICE_ACCOUNT_B64 || undefined,
+    fcmServiceAccountB64: process.env.FCM_SERVICE_ACCOUNT_B64?.trim() || undefined,
     mockCellmoneyWebhookSecret: str('MOCK_CELLMONEY_WEBHOOK_SECRET', devDefault('dev-webhook-secret')),
-    sentryDsn: process.env.SENTRY_DSN || undefined,
+    sentryDsn: process.env.SENTRY_DSN?.trim() || undefined,
     logLevel: str('LOG_LEVEL', 'info'),
     runWorkers: bool('RUN_WORKERS', true),
   };
   if (isProd && cached.mockCellmoneyWebhookSecret === 'dev-webhook-secret') {
     throw new Error('Refusing to start in production with the dev webhook secret');
+  }
+  if (isProd && cached.smsProvider === 'mock') {
+    // eslint-disable-next-line no-console
+    console.warn('WARNING: SMS_PROVIDER=mock in production — OTP codes are only written to logs. Configure the SMS gateway before go-live.');
   }
   return cached;
 }

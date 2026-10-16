@@ -1,0 +1,112 @@
+# Local development stack: PostGIS, Redis, MinIO (S3), API, worker, admin dashboard.
+#   docker compose -f infra/docker-compose.yml up --build
+#   docker compose -f infra/docker-compose.yml run --rm seed      # demo data
+# API: http://localhost:3000 (Swagger at /api/docs) · Admin: http://localhost:8080 · MinIO console: http://localhost:9001
+name: cooper-waters
+
+x-app-env: &app-env
+  NODE_ENV: development
+  DATABASE_URL: postgresql://cw:cw@postgres:5432/cooper?schema=public
+  REDIS_URL: redis://redis:6379
+  REDIS_PREFIX: cw-local
+  JWT_ACCESS_SECRET: dev-access-secret-change-me
+  JWT_REFRESH_SECRET: dev-refresh-secret-change-me
+  CORS_ORIGINS: http://localhost:8080,http://localhost:5173
+  S3_BUCKET: cooper-waters-dev
+  S3_REGION: ap-southeast-2
+  # Presigned URLs must be reachable from your browser/emulator, so sign against the host-mapped port.
+  S3_ENDPOINT: http://localhost:9000
+  S3_FORCE_PATH_STYLE: "true"
+  AWS_ACCESS_KEY_ID: minioadmin
+  AWS_SECRET_ACCESS_KEY: minioadmin
+  SMS_PROVIDER: mock
+  PUSH_PROVIDER: mock
+  MOCK_CELLMONEY_WEBHOOK_SECRET: dev-webhook-secret
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: cw
+      POSTGRES_PASSWORD: cw
+      POSTGRES_DB: cooper
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cw -d cooper"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/data]
+
+  minio-init:
+    image: minio/mc:RELEASE.2024-10-08T09-37-26Z
+    depends_on: [minio]
+    entrypoint: >
+      /bin/sh -c "until mc alias set local http://minio:9000 minioadmin minioadmin; do sleep 1; done;
+      mc mb -p local/cooper-waters-dev; exit 0"
+
+  migrate:
+    build: ../backend
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment: *app-env
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  seed:
+    build: ../backend
+    command: ["node", "dist/cli/seed.js"]
+    environment:
+      <<: *app-env
+      SEED_DEMO_DATA: "true"
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    profiles: ["seed"]
+
+  api:
+    build: ../backend
+    command: ["node", "dist/main.js"]
+    environment:
+      <<: *app-env
+      PORT: "3000"
+      RUN_WORKERS: "false"
+    ports: ["3000:3000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  worker:
+    build: ../backend
+    command: ["node", "dist/worker.js"]
+    environment: *app-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+
+  admin:
+    build:
+      context: ../admin
+      args:
+        VITE_API_BASE_URL: http://localhost:3000
+    ports: ["8080:80"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
+  miniodata:
