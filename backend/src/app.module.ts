@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { UserAwareThrottlerGuard } from './common/throttler.guard';
 import { PrismaModule } from './prisma/prisma.service';
 import { SettingsModule } from './settings/settings.module';
 import { AuditModule } from './audit/audit.service';
@@ -87,7 +88,7 @@ import { IdempotencyInterceptor } from './common/idempotency';
     AdminReportsController,
   ],
   providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: UserAwareThrottlerGuard },
     IdempotencyInterceptor,
     LedgerService,
     WalletService,
