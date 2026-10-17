@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -72,7 +73,7 @@ fun OnboardingScreen(onStageChanged: (DriverStage) -> Unit, onProfile: () -> Uni
         title = stringResource(R.string.onboarding_title),
         actions = {
             IconButton(onClick = vm::refresh) { Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.action_refresh)) }
-            IconButton(onClick = onProfile) { Icon(androidx.compose.material.icons.Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.profile_title)) }
+            IconButton(onClick = onProfile) { Icon(Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.profile_title)) }
         },
     ) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -148,7 +149,7 @@ fun WaitingScreen(onStageChanged: (DriverStage) -> Unit, onProfile: () -> Unit) 
     LaunchedEffect(profile?.status) { profile?.let { p -> stageFor(p.status).takeIf { it != DriverStage.WAITING }?.let(onStageChanged) } }
 
     ScreenScaffold(title = stringResource(R.string.waiting_title), actions = {
-        IconButton(onClick = onProfile) { Icon(androidx.compose.material.icons.Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.profile_title)) }
+        IconButton(onClick = onProfile) { Icon(Icons.Filled.AccountCircle, contentDescription = stringResource(R.string.profile_title)) }
     }) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             val suspended = profile?.status == "suspended"

@@ -26,6 +26,9 @@ process.env.REDIS_PREFIX = process.env.SIM_REDIS_PREFIX ?? `sim-${Date.now()}`;
 process.env.LOG_LEVEL = process.env.SIM_LOG_LEVEL ?? 'warn';
 process.env.SMS_PROVIDER = 'mock';
 process.env.PUSH_PROVIDER = 'mock';
+// Upload URLs are only presigned (signing is offline), never used, so placeholder credentials suffice.
+process.env.AWS_ACCESS_KEY_ID ??= 'simulator';
+process.env.AWS_SECRET_ACCESS_KEY ??= 'simulator';
 
 /* eslint-disable no-console */
 const step = (msg: string) => console.log(`\n▶ ${msg}`);
