@@ -24,6 +24,8 @@ permissions:
 
 jobs:
   deploy:
+    # Skips until AWS is set up (repo variables from docs/deployment-aws.md exist).
+    if: ${{ vars.ECR_REPOSITORY_URL != '' }}
     runs-on: ubuntu-latest
     environment: production
     env:
