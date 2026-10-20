@@ -56,8 +56,8 @@ export function LoginPage() {
   };
 
   return (
-    <Center mih="100vh" bg="gray.0" p="md">
-      <Paper withBorder shadow="sm" p="xl" w={400} maw="100%">
+    <Center mih="100vh" p="md" className="cw-login">
+      <Paper shadow="xl" p={{ base: 'lg', sm: 'xl' }} w={400} maw="100%">
         <Stack>
           <Stack align="center" gap={4}>
             <ThemeIcon size={48} radius="xl" variant="light">
