@@ -2,15 +2,23 @@
 region      = "ap-southeast-2"
 environment = "prod"
 
-# api_domain          = "api.cooperwaters.com.pg"
-# api_certificate_arn = "arn:aws:acm:ap-southeast-2:123456789012:certificate/..."
-# admin_domain          = "admin.cooperwaters.com.pg"
-# admin_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."
-
-github_repository = "marcellaniasewitip/blank-app"
+github_repository = "marcellaniasewitip/cooper-water"
 # alarm_email     = "ops@cooperwaters.com.pg"
 
-# Staging can be cheaper:
-# db_multi_az       = false
-# db_instance_class = "db.t4g.micro"
-# api_desired_count = 1
+# ── Size ──
+# Starter / staging size (roughly US$130–180/month). Comment these out for full production
+# size (Multi-AZ database and Redis, 2–6 API tasks; roughly US$250–350/month).
+db_multi_az       = false
+db_instance_class = "db.t4g.micro"
+redis_multi_az    = false
+redis_node_type   = "cache.t4g.micro"
+api_desired_count = 1
+
+# ── Domain (optional, add later) ──
+# Without these, the API gets a free https://<id>.cloudfront.net address and the admin
+# dashboard gets https://<id>.cloudfront.net. Set them once you own a domain and have
+# ACM certificates, then run terraform apply again.
+# api_domain            = "api.cooperwaters.com.pg"
+# api_certificate_arn   = "arn:aws:acm:ap-southeast-2:123456789012:certificate/..."
+# admin_domain          = "admin.cooperwaters.com.pg"
+# admin_certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/..."

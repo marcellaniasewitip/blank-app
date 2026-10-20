@@ -97,6 +97,12 @@ variable "redis_node_type" {
   default = "cache.t4g.small"
 }
 
+variable "redis_multi_az" {
+  description = "Two Redis nodes across availability zones with automatic failover. false = one node (cheaper, for staging)."
+  type        = bool
+  default     = true
+}
+
 variable "log_retention_days" {
   type    = number
   default = 30

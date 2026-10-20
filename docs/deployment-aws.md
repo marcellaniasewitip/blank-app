@@ -15,13 +15,21 @@ Target: **ap-southeast-2 (Sydney)** — the lowest-latency AWS region to Port Mo
 | ElastiCache Redis 7 (TLS + AUTH, `noeviction`, Multi-AZ) | BullMQ + Socket.IO fan-out |
 | S3 uploads bucket (private, versioned, TLS-only) | Presigned PUT/GET only |
 | S3 + CloudFront (OAC) for the admin dashboard | SPA fallback, security headers |
+| CloudFront in front of the ALB (only while no API domain/certificate is set) | Free HTTPS address for the API; nothing cached |
 | ECR repository (scan on push, keep 30 images) | |
 | Secrets Manager: DB/Redis URLs, JWT secrets, webhook secret (generated); FCM, Sentry, seed password (fill in) | Injected as env vars |
 | CloudWatch logs (30 days) and alarms (5xx, p95 > 300 ms, unhealthy targets, DB CPU, worker down) → SNS | |
 | GitHub OIDC deploy role | No long-lived AWS keys in GitHub |
 
-Rough cost at default sizes: ~US$250–350/month (NAT, Multi-AZ RDS and Redis dominate). For staging set
-`db_multi_az=false`, `db_instance_class="db.t4g.micro"`, `api_desired_count=1`.
+Rough cost at default sizes: ~US$250–350/month (NAT, Multi-AZ RDS and Redis dominate). The example
+`terraform.tfvars.example` uses the starter size (~US$130–180/month): `db_multi_az=false`,
+`db_instance_class="db.t4g.micro"`, `redis_multi_az=false`, `redis_node_type="cache.t4g.micro"`, `api_desired_count=1`.
+
+**No domain yet?** Leave `api_domain`/`api_certificate_arn` empty. The API is then served through a
+CloudFront distribution at a free `https://<id>.cloudfront.net` address (`terraform output api_url`), so the
+HTTPS admin dashboard can call it. When you add the domain and certificate later, re-run `terraform apply`
+(that distribution is removed), update `API_PUBLIC_URL` in GitHub and redeploy. Build the Play Store
+releases of the Android apps only after the final domain is in place, because the API address is built into them.
 
 ## First-time setup
 
@@ -41,11 +49,11 @@ Rough cost at default sizes: ~US$250–350/month (NAT, Multi-AZ RDS and Redis do
    aws secretsmanager put-secret-value --secret-id cooper-waters-prod/SENTRY_DSN --secret-string 'https://…'      # optional
    aws secretsmanager put-secret-value --secret-id cooper-waters-prod/FCM_SERVICE_ACCOUNT_B64 --secret-string "$(base64 -w0 firebase.json)"  # then set push_provider="fcm"
    ```
-5. **DNS**: CNAME/alias `api.<domain>` → `terraform output alb_dns_name`; `admin.<domain>` → `cloudfront_domain`.
+5. **DNS** (skip until you have a domain): CNAME/alias `api.<domain>` → `terraform output alb_dns_name`; `admin.<domain>` → `cloudfront_domain`.
 6. **GitHub configuration** (Settings → Secrets and variables → Actions, environment `production`):
    - secret `AWS_DEPLOY_ROLE_ARN` = `terraform output deploy_role_arn`
    - variables: `AWS_REGION=ap-southeast-2`, `NAME_PREFIX=cooper-waters-prod`, `ECR_REPOSITORY_URL`, `ADMIN_BUCKET`,
-     `CLOUDFRONT_DISTRIBUTION_ID`, `API_PUBLIC_URL` (e.g. `https://api.cooperwaters.com.pg`),
+     `CLOUDFRONT_DISTRIBUTION_ID`, `API_PUBLIC_URL` (= `terraform output api_url`, e.g. `https://d2xyz.cloudfront.net` or `https://api.cooperwaters.com.pg`),
      `PRIVATE_SUBNET_IDS` (comma-separated, from `private_subnet_ids`), `APP_SECURITY_GROUP_ID`.
 7. **Deploy**: push to `main` or run *Deploy to AWS* manually. The first run pushes the image, migrates, and
    starts the services (they crash-loop until the first image exists — that's expected before step 7).

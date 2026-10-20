@@ -1,5 +1,6 @@
 output "api_url" {
-  value = var.api_domain != "" ? "https://${var.api_domain}" : "http://${aws_lb.api.dns_name}"
+  description = "Public HTTPS address of the API. Without api_domain/certificate it is the free CloudFront address."
+  value       = local.https ? "https://${var.api_domain}" : "https://${aws_cloudfront_distribution.api[0].domain_name}"
 }
 
 output "alb_dns_name" {
