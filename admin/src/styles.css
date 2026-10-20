@@ -1,6 +1,130 @@
-body {
-  background: var(--mantine-color-gray-0);
+:root {
+  --cw-ink: #0b2a4a;
+  --cw-page-bg: #eef4fa;
+  --cw-line: #dde7f1;
+  --cw-nav-bg: linear-gradient(180deg, #0b2a4a 0%, #082039 100%);
+  --cw-header-bg: linear-gradient(90deg, #0a3561 0%, #0b5a99 55%, #0e7ac4 100%);
 }
+
+body {
+  background: var(--cw-page-bg);
+  color: var(--cw-ink);
+}
+
+/* ───────────── Shell ───────────── */
+
+.cw-header {
+  background: var(--cw-header-bg);
+  border-bottom: none;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(8, 32, 57, 0.18);
+}
+.cw-header .mantine-Badge-root {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+.cw-header .mantine-Burger-burger,
+.cw-header .mantine-Burger-burger::before,
+.cw-header .mantine-Burger-burger::after {
+  background-color: #fff;
+}
+
+.cw-navbar {
+  background: var(--cw-nav-bg);
+  border-right: none;
+}
+.cw-nav-section {
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.06em;
+}
+.cw-navbar .mantine-NavLink-root {
+  border-radius: var(--mantine-radius-md);
+  margin-bottom: 2px;
+  color: rgba(255, 255, 255, 0.78);
+}
+.cw-navbar .mantine-NavLink-root:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+.cw-navbar .mantine-NavLink-root[data-active] {
+  background: linear-gradient(90deg, rgba(56, 176, 240, 0.32), rgba(56, 176, 240, 0.12));
+  color: #fff;
+  box-shadow: inset 3px 0 0 #5cc4ff;
+}
+.cw-navbar .mantine-NavLink-label {
+  font-weight: 500;
+}
+.cw-navbar .mantine-ScrollArea-thumb {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ───────────── Surfaces ───────────── */
+
+.mantine-Card-root[data-with-border],
+.mantine-Paper-root[data-with-border] {
+  border-color: var(--cw-line);
+}
+.mantine-Title-root {
+  color: var(--cw-ink);
+}
+.mantine-Table-thead {
+  background: #f2f7fc;
+}
+.mantine-Table-th {
+  color: #3a5677;
+  font-weight: 600;
+}
+
+.cw-stat {
+  border-top: 4px solid var(--cw-stat-color);
+}
+
+.cw-queue {
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--cw-line);
+  background: #f7fafd;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.cw-queue:hover {
+  background: #edf5fc;
+  border-color: #b9d6ef;
+}
+.cw-queue[data-hot] {
+  background: #fff6eb;
+  border-color: #ffd8a8;
+}
+
+.cw-login {
+  background: radial-gradient(circle at 20% 10%, #1683cf 0%, transparent 45%), linear-gradient(135deg, #0a3561 0%, #0b2a4a 60%, #082039 100%);
+}
+
+/* ───────────── Responsive ───────────── */
+
+/* Fixed-width inputs never push past the screen edge… */
+.mantine-InputWrapper-root {
+  max-width: 100%;
+}
+/* …and on phones, inputs laid out in a row (filter bars) take the full width. */
+@media (max-width: 36em) {
+  .mantine-Group-root > .mantine-InputWrapper-root {
+    width: 100% !important;
+  }
+}
+
+.cw-fleet {
+  --cw-map-h: 55vh;
+  --cw-list-h: none;
+}
+@media (min-width: 62em) {
+  .cw-fleet {
+    --cw-map-h: calc(100vh - 190px);
+    --cw-list-h: calc(100vh - 290px);
+  }
+}
+
+/* ───────────── Maps ───────────── */
+
 .leaflet-container {
   font: inherit;
 }

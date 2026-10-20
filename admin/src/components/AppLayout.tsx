@@ -1,4 +1,4 @@
-import { AppShell, Badge, Burger, Group, Menu, NavLink, ScrollArea, Text, ThemeIcon, Tooltip, UnstyledButton } from '@mantine/core';
+import { Avatar, AppShell, Badge, Box, Burger, Group, Menu, NavLink, ScrollArea, Text, ThemeIcon, Tooltip, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconChevronDown, IconDroplet, IconLogout, IconUserShield } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
@@ -51,39 +51,47 @@ export function AppLayout() {
   const counts = p ? { driverApprovals: p.driverApprovals, topups: p.topups, payouts: p.payouts, disputes: p.disputes, payments: p.manualPayments + p.refunds } : undefined;
 
   return (
-    <AppShell header={{ height: 56 }} navbar={{ width: 260, breakpoint: 'sm', collapsed: { mobile: !opened } }} padding="md">
-      <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="xs">
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <ThemeIcon variant="light" radius="xl">
-              <IconDroplet size={18} />
+    <AppShell header={{ height: 60 }} navbar={{ width: 260, breakpoint: 'sm', collapsed: { mobile: !opened } }} padding={{ base: 'sm', sm: 'md', lg: 'lg' }}>
+      <AppShell.Header className="cw-header">
+        <Group h="100%" px={{ base: 'sm', sm: 'md' }} justify="space-between" wrap="nowrap">
+          <Group gap="xs" wrap="nowrap" miw={0}>
+            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" aria-label="Menu" />
+            <ThemeIcon variant="white" radius="xl" size="lg">
+              <IconDroplet size={20} />
             </ThemeIcon>
-            <Text fw={700}>{m.app.name}</Text>
-            <Text c="dimmed" size="sm">
+            <Text fw={700} c="white" truncate>
+              {m.app.name}
+            </Text>
+            <Text c="rgba(255,255,255,0.65)" size="sm" visibleFrom="xs">
               {m.app.subtitle}
             </Text>
           </Group>
-          <Group gap="sm">
+          <Group gap="sm" wrap="nowrap">
             {can('dashboard.view') && (
               <Tooltip label={connected ? 'Socket.IO /realtime' : `${config.pollMs.fleet / 1000}s`}>
-                <Badge variant="dot" color={connected ? 'teal' : 'gray'} data-testid="realtime-status">
-                  {connected ? m.app.realtimeOn : m.app.realtimeOff}
-                </Badge>
+                <div>
+                  <Badge variant="dot" color={connected ? 'teal' : 'gray'} data-testid="realtime-status" visibleFrom="xs">
+                    {connected ? m.app.realtimeOn : m.app.realtimeOff}
+                  </Badge>
+                  <Box hiddenFrom="xs" w={10} h={10} bg={connected ? 'teal.4' : 'gray.5'} style={{ borderRadius: '50%', boxShadow: '0 0 0 3px rgba(255,255,255,0.18)' }} aria-label={connected ? m.app.realtimeOn : m.app.realtimeOff} />
+                </div>
               </Tooltip>
             )}
             <Menu position="bottom-end" withinPortal>
               <Menu.Target>
-                <UnstyledButton>
-                  <Group gap={6}>
-                    <div style={{ textAlign: 'right' }}>
-                      <Text size="sm" fw={500} lh={1.1}>
+                <UnstyledButton c="white">
+                  <Group gap={8} wrap="nowrap">
+                    <Avatar size={32} radius="xl" color="ocean" variant="white">
+                      {me?.name?.trim().charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Box visibleFrom="sm">
+                      <Text size="sm" fw={600} lh={1.15}>
                         {me?.name}
                       </Text>
-                      <Text size="xs" c="dimmed" lh={1.1}>
+                      <Text size="xs" c="rgba(255,255,255,0.7)" lh={1.15}>
                         {me?.role.name}
                       </Text>
-                    </div>
+                    </Box>
                     <IconChevronDown size={14} />
                   </Group>
                 </UnstyledButton>
@@ -101,12 +109,12 @@ export function AppLayout() {
           </Group>
         </Group>
       </AppShell.Header>
-      <AppShell.Navbar p="xs">
+      <AppShell.Navbar p="xs" className="cw-navbar">
         <ScrollArea>
           {nav.map((item) =>
             item.children ? (
               <div key={item.label}>
-                <Text size="xs" fw={700} c="dimmed" tt="uppercase" px="sm" pt="md" pb={4}>
+                <Text size="xs" fw={700} tt="uppercase" px="sm" pt="md" pb={4} className="cw-nav-section">
                   {item.label}
                 </Text>
                 {item.children.map((c) => (

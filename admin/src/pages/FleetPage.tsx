@@ -38,10 +38,10 @@ export default function FleetPage() {
     <>
       <PageHeader title={m.fleet.title} subtitle={`${fmt(m.fleet.drivers, { count: drivers.length })} · ${fmt(m.fleet.onlineCount, { count: online })}`} />
       <QueryState isPending={fleet.isPending} error={fleet.error} refetch={fleet.refetch}>
-        <Grid>
+        <Grid className="cw-fleet">
           <Grid.Col span={{ base: 12, md: 9 }}>
             <Card withBorder p={0}>
-              <MapBase height="calc(100vh - 190px)">
+              <MapBase height="var(--cw-map-h)">
                 {(depots.data ?? []).map((dp) =>
                   dp.geofencePolygon ? (
                     <Polygon key={dp.id} positions={dp.geofencePolygon.coordinates[0].map(([lng, lat]) => [lat, lng] as [number, number])} pathOptions={{ color: '#1c7ed6', weight: 1, fillOpacity: 0.1 }}>
@@ -106,7 +106,7 @@ export default function FleetPage() {
                   </Badge>
                 ))}
               </Group>
-              <ScrollArea h="calc(100vh - 290px)">
+              <ScrollArea.Autosize mah="var(--cw-list-h)">
                 <Stack gap="xs" data-testid="fleet-list">
                   {drivers.length === 0 && <Text c="dimmed">{m.fleet.noLocation}</Text>}
                   {drivers.map((d) => (
@@ -125,7 +125,7 @@ export default function FleetPage() {
                     </Group>
                   ))}
                 </Stack>
-              </ScrollArea>
+              </ScrollArea.Autosize>
             </Card>
           </Grid.Col>
         </Grid>

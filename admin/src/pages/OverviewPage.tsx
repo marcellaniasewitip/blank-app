@@ -1,6 +1,6 @@
-import { Badge, Card, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, UnstyledButton } from '@mantine/core';
+import { Badge, Card, Group, SimpleGrid, Stack, Text, ThemeIcon, Title, UnstyledButton, type MantineColor } from '@mantine/core';
 import { BarChart } from '@mantine/charts';
-import { IconAlertTriangle, IconCash, IconCoins, IconReceipt, IconReceiptRefund, IconSteeringWheel } from '@tabler/icons-react';
+import { IconAlertTriangle, IconCash, IconChartBar, IconCoins, IconReceipt, IconReceiptRefund, IconSteeringWheel, IconTruckDelivery, IconWallet } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
@@ -16,13 +16,18 @@ import { formatKina } from '@/lib/money';
 import { formatDate } from '@/lib/time';
 import { useRealtime } from '@/realtime/RealtimeProvider';
 
-function Stat({ title, value, hint, testId }: { title: string; value: ReactNode; hint?: string; testId?: string }) {
+function Stat({ title, value, hint, icon, color, testId }: { title: string; value: ReactNode; hint?: string; icon: ReactNode; color: MantineColor; testId?: string }) {
   return (
-    <Card withBorder data-testid={testId}>
-      <Text size="xs" c="dimmed" tt="uppercase" fw={700}>
-        {title}
-      </Text>
-      <Text fz={28} fw={700} mt={4}>
+    <Card withBorder data-testid={testId} className="cw-stat" style={{ '--cw-stat-color': `var(--mantine-color-${color}-6)` } as React.CSSProperties} p={{ base: 'sm', sm: 'md' }}>
+      <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+        <Text size="xs" c="dimmed" tt="uppercase" fw={700} lh={1.3}>
+          {title}
+        </Text>
+        <ThemeIcon variant="light" color={color} radius="md" size="lg">
+          {icon}
+        </ThemeIcon>
+      </Group>
+      <Text fz={{ base: 20, sm: 28 }} fw={700} mt={4} c={`${color}.8`}>
         {value}
       </Text>
       {hint && (
@@ -59,11 +64,11 @@ export default function OverviewPage() {
       <QueryState isPending={q.isPending} error={q.error} refetch={q.refetch}>
         {o && (
           <Stack>
-            <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }}>
-              <Stat title={m.overview.ordersToday} value={o.ordersToday.total} testId="stat-orders" />
-              <Stat title={m.overview.activeDrivers} value={o.activeDrivers} testId="stat-drivers" />
-              <Stat title={m.overview.revenue} value={formatKina(o.revenueTodayToea)} hint={m.overview.revenueHint} testId="stat-revenue" />
-              <Stat title={m.overview.gmv} value={formatKina(o.gmvTodayToea)} hint={fmt(m.overview.gmvHint, { count: o.completedToday })} testId="stat-gmv" />
+            <SimpleGrid cols={{ base: 2, md: 4 }} spacing={{ base: 'xs', sm: 'md' }}>
+              <Stat title={m.overview.ordersToday} value={o.ordersToday.total} icon={<IconTruckDelivery size={20} />} color="ocean" testId="stat-orders" />
+              <Stat title={m.overview.activeDrivers} value={o.activeDrivers} icon={<IconSteeringWheel size={20} />} color="teal" testId="stat-drivers" />
+              <Stat title={m.overview.revenue} value={formatKina(o.revenueTodayToea)} hint={m.overview.revenueHint} icon={<IconWallet size={20} />} color="violet" testId="stat-revenue" />
+              <Stat title={m.overview.gmv} value={formatKina(o.gmvTodayToea)} hint={fmt(m.overview.gmvHint, { count: o.completedToday })} icon={<IconChartBar size={20} />} color="orange" testId="stat-gmv" />
             </SimpleGrid>
             <SimpleGrid cols={{ base: 1, md: 2 }}>
               <Card withBorder>
@@ -74,7 +79,7 @@ export default function OverviewPage() {
                   <Empty>{m.overview.noOrders}</Empty>
                 ) : (
                   <Stack>
-                    <BarChart h={200} data={chart} dataKey="status" series={[{ name: 'count', color: 'blue.6', label: m.orders.title }]} />
+                    <BarChart h={200} data={chart} dataKey="status" series={[{ name: 'count', color: 'ocean.6', label: m.orders.title }]} />
                     <Group gap="xs">
                       {ORDER_STATUSES.filter((s) => o.ordersToday.byStatus[s]).map((s) => (
                         <UnstyledButton key={s} component={Link} to={`/orders?status=${s}`}>
@@ -99,9 +104,9 @@ export default function OverviewPage() {
                     .filter((qq) => can(qq.perm))
                     .map((qq) => (
                       <UnstyledButton key={qq.key} component={Link} to={qq.to} data-testid={`queue-${qq.key}`}>
-                        <Group justify="space-between" p="xs" style={{ borderRadius: 8, border: '1px solid var(--mantine-color-gray-3)' }}>
+                        <Group justify="space-between" p="xs" wrap="nowrap" className="cw-queue" data-hot={qq.count > 0 || undefined}>
                           <Group gap="sm">
-                            <ThemeIcon variant="light" color={qq.count ? 'orange' : 'gray'}>
+                            <ThemeIcon variant="light" color={qq.count ? 'orange' : 'ocean'}>
                               {qq.icon}
                             </ThemeIcon>
                             <Text size="sm">{qq.label}</Text>

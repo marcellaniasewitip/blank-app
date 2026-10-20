@@ -37,7 +37,20 @@ const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const PlatformWalletPage = lazy(() => import('@/pages/PlatformWalletPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 
-const theme = createTheme({ primaryColor: 'blue', defaultRadius: 'md', fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif' });
+const theme = createTheme({
+  // Brand "ocean" blue (shade 6 is the main brand colour).
+  colors: {
+    ocean: ['#e7f4fc', '#cfe7f7', '#a0ceee', '#6db3e4', '#439cdb', '#2a8ed6', '#1683cf', '#0570b7', '#0063a4', '#005591'],
+  },
+  primaryColor: 'ocean',
+  defaultRadius: 'md',
+  fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+  headings: { fontWeight: '700' },
+  components: {
+    Card: { defaultProps: { radius: 'lg', shadow: 'xs' } },
+    Paper: { defaultProps: { radius: 'lg' } },
+  },
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
