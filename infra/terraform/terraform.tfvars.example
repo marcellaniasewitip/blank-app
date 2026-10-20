@@ -3,6 +3,9 @@ region      = "ap-southeast-2"
 environment = "prod"
 
 github_repository = "marcellaniasewitip/cooper-water"
+# If the repo uses GitHub's immutable OIDC subjects, set the prefix from:
+#   gh api repos/marcellaniasewitip/cooper-water/actions/oidc/customization/sub --jq .sub_claim_prefix
+github_oidc_subject_prefix = "repo:marcellaniasewitip@178868371/cooper-water@1160460057"
 # alarm_email     = "ops@cooperwaters.com.pg"
 
 # ── Size ──

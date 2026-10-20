@@ -16,6 +16,14 @@ locals {
   github_oidc_arn = var.github_repository == "" ? "" : (var.create_github_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : data.aws_iam_openid_connect_provider.github[0].arn)
 }
 
+# Repos using GitHub's immutable subject format send sub=repo:owner@<id>/repo@<id>:...
+locals {
+  github_oidc_subjects = compact([
+    "repo:${var.github_repository}:*",
+    var.github_oidc_subject_prefix != "" ? "${var.github_oidc_subject_prefix}:*" : "",
+  ])
+}
+
 resource "aws_iam_role" "deploy" {
   count = var.github_repository != "" ? 1 : 0
   name  = "${local.name}-github-deploy"
@@ -27,7 +35,7 @@ resource "aws_iam_role" "deploy" {
       Action    = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringEquals = { "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com" }
-        StringLike   = { "token.actions.githubusercontent.com:sub" = "repo:${var.github_repository}:*" }
+        StringLike   = { "token.actions.githubusercontent.com:sub" = local.github_oidc_subjects }
       }
     }]
   })

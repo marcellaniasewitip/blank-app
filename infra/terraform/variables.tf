@@ -125,6 +125,16 @@ variable "github_repository" {
   default     = ""
 }
 
+variable "github_oidc_subject_prefix" {
+  description = <<-EOT
+    Extra OIDC subject prefix to trust, for repos that use GitHub's immutable subject format
+    (e.g. "repo:owner@123/repo@456"). Get it with:
+    gh api repos/<owner>/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix
+  EOT
+  type        = string
+  default     = ""
+}
+
 variable "create_github_oidc_provider" {
   description = "Create the GitHub OIDC identity provider (only one per AWS account)."
   type        = bool
