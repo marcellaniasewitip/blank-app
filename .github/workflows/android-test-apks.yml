@@ -1,0 +1,57 @@
+name: Android test APKs (live API)
+
+# Builds installable test APKs of the customer and driver apps that talk to the live AWS API
+# (repo variable API_PUBLIC_URL, e.g. https://<id>.cloudfront.net). Debug-signed, so they install
+# on any Android phone or emulator without a release key. Not for the Play Store.
+#
+# Download: Actions -> this workflow -> latest run -> Artifacts.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - customer-android/**
+      - driver-android/**
+      - shared/android-core/**
+      - .github/workflows/android-test-apks.yml
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    if: ${{ vars.API_PUBLIC_URL != '' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - app: customer-android
+            name: cooper-waters-customer
+          - app: driver-android
+            name: cooper-waters-driver
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: chmod +x gradlew
+      - name: Build APK pointed at the live API
+        run: ./gradlew --no-daemon assembleDebug -Pcw.apiBaseUrl="${{ vars.API_PUBLIC_URL }}"
+      - name: Rename APK
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/debug/*.apk "out/${{ matrix.name }}-test-${GITHUB_SHA::7}.apk"
+          echo "Built ${{ matrix.name }} against ${{ vars.API_PUBLIC_URL }}" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}-test-apk
+          path: ${{ matrix.app }}/out/*.apk
+          if-no-files-found: error
+          retention-days: 30
