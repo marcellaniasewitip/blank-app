@@ -14,9 +14,11 @@ export MSYS_NO_PATHCONV=1
 LOCAL_PORT="${1:-15432}"
 TF_DIR="$(cd "$(dirname "$0")/../infra/terraform" && pwd)"
 
-INSTANCE_ID="$(terraform -chdir="$TF_DIR" output -raw db_tunnel_instance_id 2>/dev/null || true)"
-DB_HOST="$(terraform -chdir="$TF_DIR" output -raw db_endpoint)"
-REGION="$(terraform -chdir="$TF_DIR" output -raw region 2>/dev/null || echo ap-southeast-2)"
+# Run terraform from inside its folder (Windows terraform.exe can't read /c/... paths in -chdir).
+cd "$TF_DIR"
+INSTANCE_ID="$(terraform output -raw db_tunnel_instance_id 2>/dev/null || true)"
+DB_HOST="$(terraform output -raw db_endpoint)"
+REGION="$(terraform output -raw region 2>/dev/null || echo ap-southeast-2)"
 
 if [ -z "$INSTANCE_ID" ] || [ "$INSTANCE_ID" = "null" ]; then
   echo "No tunnel host. Set enable_db_tunnel = true in infra/terraform/terraform.tfvars and run terraform apply." >&2
