@@ -146,3 +146,9 @@ variable "alarm_email" {
   type        = string
   default     = ""
 }
+
+variable "enable_db_tunnel" {
+  description = "Create a tiny private EC2 instance for Session Manager port forwarding to the database (scripts/db-tunnel.sh). ~US$4/month."
+  type        = bool
+  default     = false
+}

@@ -56,3 +56,16 @@ output "secrets_to_fill" {
   description = "Set these in Secrets Manager after the first apply."
   value       = [for k, s in aws_secretsmanager_secret.external : s.name]
 }
+
+output "db_endpoint" {
+  value = aws_db_instance.main.address
+}
+
+output "db_tunnel_instance_id" {
+  description = "Use with scripts/db-tunnel.sh. Null unless enable_db_tunnel = true."
+  value       = var.enable_db_tunnel ? aws_instance.db_tunnel[0].id : null
+}
+
+output "region" {
+  value = var.region
+}
